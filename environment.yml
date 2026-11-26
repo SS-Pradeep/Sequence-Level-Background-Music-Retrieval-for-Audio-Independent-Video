@@ -1,0 +1,32 @@
+name: bgm
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - ffmpeg
+  - pip
+  - pip:
+      - torch
+      - torchvision
+      - torchaudio
+      - transformers>=4.40
+      - sentencepiece
+      - protobuf
+      - accelerate
+      - numpy
+      - scipy
+      - pandas
+      - pyarrow
+      - scikit-learn
+      - librosa
+      - soundfile
+      - soxr
+      - opencv-python-headless
+      - scenedetect
+      - pyloudnorm
+      - pedalboard
+      - panns-inference
+      - typer
+      - omegaconf
+      - tqdm
+      - pytest
+      # optional: essentia (key/tonic; Linux and macOS wheels)

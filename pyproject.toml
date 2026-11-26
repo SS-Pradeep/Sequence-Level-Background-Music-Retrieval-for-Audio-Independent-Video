@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bgm"
+version = "0.1.0"
+description = "Video-to-BGM retrieval: segment a silent video, retrieve and stitch background music"
+requires-python = ">=3.11"
+# Dependencies are managed by environment.yml (and pinned in docs/PROGRESS.md); install with --no-deps.
+dependencies = []
+
+[project.scripts]
+bgm = "bgm.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-ra"
+markers = ["slow: long-running acceptance checks (training on synthetic pairs)"]
