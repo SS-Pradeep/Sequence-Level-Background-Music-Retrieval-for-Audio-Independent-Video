@@ -1,0 +1,5 @@
+name: siglip+supcon
+main: siglip
+aux:
+  supcon: 0.1
+weighting: fixed

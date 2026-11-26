@@ -1,0 +1,4 @@
+name: hgm
+main: hgm
+aux: {}
+weighting: fixed

@@ -1,0 +1,5 @@
+name: siglip+intra
+main: siglip
+aux:
+  intra: 0.5
+weighting: fixed

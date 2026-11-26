@@ -1,0 +1,5 @@
+name: siglip+recon
+main: siglip
+aux:
+  recon: 0.1
+weighting: fixed

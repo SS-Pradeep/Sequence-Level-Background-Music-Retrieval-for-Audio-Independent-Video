@@ -1,0 +1,5 @@
+name: siglip+rdrop
+main: siglip
+aux:
+  rdrop: 1.0
+weighting: fixed

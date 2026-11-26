@@ -1,0 +1,4 @@
+name: pq_tau
+main: pq_tau
+aux: {}
+weighting: fixed

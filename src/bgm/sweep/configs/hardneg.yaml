@@ -1,0 +1,4 @@
+name: hardneg
+main: hardneg
+aux: {}
+weighting: fixed

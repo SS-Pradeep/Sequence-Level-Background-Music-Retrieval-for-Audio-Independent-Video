@@ -1,0 +1,4 @@
+name: siglip
+main: siglip
+aux: {}
+weighting: fixed

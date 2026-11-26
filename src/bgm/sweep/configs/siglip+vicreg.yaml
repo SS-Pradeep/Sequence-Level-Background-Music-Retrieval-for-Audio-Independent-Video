@@ -1,0 +1,5 @@
+name: siglip+vicreg
+main: siglip
+aux:
+  vicreg: 0.04
+weighting: fixed

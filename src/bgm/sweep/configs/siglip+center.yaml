@@ -1,0 +1,5 @@
+name: siglip+center
+main: siglip
+aux:
+  center: 0.01
+weighting: fixed

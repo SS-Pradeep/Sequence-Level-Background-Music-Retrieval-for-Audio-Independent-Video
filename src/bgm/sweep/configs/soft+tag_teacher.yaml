@@ -1,0 +1,5 @@
+name: soft+tag_teacher
+main: soft
+aux:
+  tag_teacher: 0.0
+weighting: fixed

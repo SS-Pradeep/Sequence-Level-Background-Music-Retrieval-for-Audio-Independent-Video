@@ -1,0 +1,4 @@
+name: vsepp
+main: vsepp
+aux: {}
+weighting: fixed

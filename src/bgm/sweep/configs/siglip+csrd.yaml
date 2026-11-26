@@ -1,0 +1,5 @@
+name: siglip+csrd
+main: siglip
+aux:
+  csrd: 0.1
+weighting: fixed

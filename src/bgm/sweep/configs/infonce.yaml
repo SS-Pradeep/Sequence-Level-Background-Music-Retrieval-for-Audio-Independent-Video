@@ -1,0 +1,4 @@
+name: infonce
+main: infonce
+aux: {}
+weighting: fixed

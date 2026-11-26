@@ -1,0 +1,5 @@
+name: siglip+orth
+main: siglip
+aux:
+  orth: 0.001
+weighting: fixed
