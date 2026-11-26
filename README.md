@@ -30,7 +30,7 @@ Viterbi stitching and the learned change predictor. The method and results are w
 ## 2. Install
 
 ```bash
-git clone <this repo> && cd <repo>
+git clone https://github.com/SS-Pradeep/<repo-name>.git && cd <repo-name>
 conda env create -f environment.yml        # creates the `bgm` env (Python 3.11, torch, transformers, librosa, ...)
 conda activate bgm
 pip install -e . --no-deps                 # installs the `bgm` command; dependencies come from environment.yml
@@ -67,7 +67,7 @@ Every path comes from `paths:` in the config. Two configs are provided:
 `cleaned_dataset/` is built from the pair trimmer's output with `python tools/build_cleaned.py`, which also writes its
 manifests and `folds_title.json`.
 
-Generated outputs go to `results/` (tables; only `.md` is tracked), `reports/`, `renders/` and `runs/`.
+Generated outputs go to `results/` (tables), `reports/`, `renders/` and `runs/`.
 
 ## 5. Add music to a video
 
@@ -164,25 +164,36 @@ Notes:
 ## 7. Repository layout
 
 ```
-src/bgm/              the package; one subpackage per stage
-  data/               manifests, audit, folds, prep, shots, segments (the only code that writes manifests)
-  features/           frozen encoders and feature extraction
-  segmentation/       scene segmentation heads and evaluation
-  train/ losses/ models/   semantic heads, dynamics encoders, baselines, loss registry
-  retrieval/          index, coarse-to-fine retrieval, fusion, Viterbi stitching
-  cue/                learned music-change predictor
-  render/             query featurization, plan, beat sync, mixing and muxing
-  eval/ sweep/ analysis/   metrics, protocols, sweeps, paper tables and figures
-  rerank/ person/ tagging/ e2e/ pretrain/ listening/   studies and opt-in branches
-  cli.py              the `bgm` command (Typer)
-configs/              YAML configs
-tests/                pytest suite (synthetic fixtures in tests/fixtures/)
-tools/                one-off scripts (cleaned-dataset builder, pair trimmer, downloads)
-exp_supp/             supplementary paper experiments (re-rankers, HSMM, shot-cut probes)
-stitching/            decoder study (CRF, two-stage, semi-Markov, segmental Viterbi)
-results/              result tables (Markdown / CSV / LaTeX)
-docs/                 spec, methodology, decision log, plans
+.
+├── configs/              YAML configs
+│   ├── default.yaml          original 1,248-pair dataset
+│   └── best_semantic.yaml    cleaned 1,011-pair dataset (current system)
+├── docs/                 spec, methodology, decision log (PROGRESS.md), plans, inventory/
+├── exp_supp/             supplementary paper experiments (re-rankers, HSMM, shot-cut probes) and their tables
+├── results/              result tables (Markdown / CSV / LaTeX); results/cleaned/ = current system
+├── src/bgm/              the Python package; one subpackage per pipeline stage
+│   ├── cli.py                the `bgm` command (Typer)
+│   ├── config.py, log.py, runs.py, doctor.py, smoke.py
+│   ├── data/                 manifests, audit, folds, prep, shots, segments (the only code that writes manifests)
+│   ├── features/             frozen encoders and feature extraction
+│   ├── segmentation/         scene segmentation heads and evaluation
+│   ├── train/ losses/ models/    semantic heads, dynamics encoders, baselines, loss registry
+│   ├── retrieval/            index, coarse-to-fine retrieval, fusion, Viterbi stitching
+│   ├── cue/                  learned music-change predictor
+│   ├── render/               query featurization, plan, beat sync, mixing and muxing
+│   ├── eval/ sweep/ analysis/    metrics, protocols, sweeps, paper tables and figures
+│   └── rerank/ person/ tagging/ e2e/ pretrain/ listening/   studies and opt-in branches
+├── stitching/            decoder study (CRF, two-stage, semi-Markov, segmental Viterbi), with its own tests/
+├── tests/                pytest suite (synthetic fixtures in tests/fixtures/)
+├── tools/                one-off scripts (cleaned-dataset builder, pair trimmer, downloads)
+├── environment.yml       conda environment (all dependencies)
+├── pyproject.toml        package definition; installs the `bgm` command
+├── render_best.sh        one-command render with the film-split ensemble
+└── README.md
 ```
+
+Folders the code expects but that are not in this repository (create them, or point `paths:` in the config at
+them): `data/`, `cleaned_dataset/`, `runs/`, `reports/`, `renders/`, `.checkpoints/`, `third_party/`.
 
 ## 8. Further reading
 
