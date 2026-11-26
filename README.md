@@ -1,4 +1,4 @@
-# Video-to-BGM Retrieval
+# Sequence-Level Background Music Retrieval for Audio-Independent Video
 
 Give it a silent video and it adds a continuous background-music (BGM) soundtrack, picked from a fixed music library.
 
