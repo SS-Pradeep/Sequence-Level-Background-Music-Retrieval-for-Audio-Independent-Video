@@ -1,0 +1,60 @@
+{
+ "method": "L (mean cue length) and rho (reprise rate) from the training films' BGM only (per fold).\n\n`.venv/bin/python -m stitching.cue_stats [--jobs 16]` -> stitching/results/cue_stats.json\n\nAudio: the interim 48 kHz FLAC of each music file (the clip's BGM; the dataset's music is already the BGM), loaded\nat 22,050 Hz, high-passed at 120 Hz (removes the Konjum DC / 100 Hz hum, memory note), mono.\nFeatures: chroma_stft (12) + MFCC 2..13 (12), each z-scored per file, pooled to 0.5 s frames.\nBoundaries: Foote novelty on the cosine self-similarity matrix (Gaussian-tapered checkerboard kernel, half-width 8 s),\npeaks via librosa.util.peak_pick (local max within +-4 s, above the moving mean + 0.1 over +-8 s, >= 8 s apart).\nCues of a file = the pieces between its boundaries (and the file ends).\nL   = total training music duration / number of cues.\nrho = share of cues (>= 4 s) whose chroma cross-correlation with an EARLIER cue of the same film exceeds the 99th\n      percentile of the same statistic over 20,000 random cue pairs from different films (film order = file order\n      by name, which follows the film timeline for the numbered clips).\n      Cross-correlation = max over lags (overlap >= 4 s) of the mean frame cosine of the 1 s chroma sequences.\n",
+ "folds": {
+  "0": {
+   "L_s": 9.421057308061556,
+   "rho": 0.33849038912330054,
+   "n_cues": 2133,
+   "n_files": 999,
+   "music_minutes": 334.91858730158833,
+   "n_cues_ge4s": 2133,
+   "n_reprises": 722,
+   "xcorr_threshold_p99_null": 0.9499363493919372,
+   "n_films": 162
+  },
+  "1": {
+   "L_s": 9.421753619105921,
+   "rho": 0.3298429319371728,
+   "n_cues": 2101,
+   "n_files": 977,
+   "music_minutes": 329.91840589569233,
+   "n_cues_ge4s": 2101,
+   "n_reprises": 693,
+   "xcorr_threshold_p99_null": 0.9534163385629656,
+   "n_films": 156
+  },
+  "2": {
+   "L_s": 9.456881601643534,
+   "rho": 0.358974358974359,
+   "n_cues": 2106,
+   "n_files": 991,
+   "music_minutes": 331.93654421768804,
+   "n_cues_ge4s": 2106,
+   "n_reprises": 756,
+   "xcorr_threshold_p99_null": 0.9486064475774766,
+   "n_films": 160
+  },
+  "3": {
+   "L_s": 9.485179482219449,
+   "rho": 0.36682464454976305,
+   "n_cues": 2110,
+   "n_files": 977,
+   "music_minutes": 333.5621451247173,
+   "n_cues_ge4s": 2110,
+   "n_reprises": 774,
+   "xcorr_threshold_p99_null": 0.9483195257186886,
+   "n_films": 157
+  },
+  "4": {
+   "L_s": 9.433545430575366,
+   "rho": 0.3516279069767442,
+   "n_cues": 2150,
+   "n_files": 1007,
+   "music_minutes": 338.03537792895065,
+   "n_cues_ge4s": 2150,
+   "n_reprises": 756,
+   "xcorr_threshold_p99_null": 0.9488641619682312,
+   "n_films": 153
+  }
+ }
+}
