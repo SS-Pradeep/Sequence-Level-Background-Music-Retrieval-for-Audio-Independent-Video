@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pair Trimmer</title>
+<style>
+:root {
+  --bg: #f6f6f4; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e1dc;
+  --accent: #2f6fdb; --accent-soft: rgba(47,111,219,.14); --danger: #c23b30; --ok: #2e8b57; --warn: #b7791f;
+  --wave: #9a9a93; --wave-in: #2f6fdb; --head: #e0452f; --field: #fbfbfa;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161615; --panel: #201f1e; --text: #ecebe7; --muted: #9c9b95; --line: #34332f;
+    --accent: #6c9cf0; --accent-soft: rgba(108,156,240,.18); --danger: #ef6a5e; --ok: #5cc28a; --warn: #e0a84a;
+    --wave: #6a6964; --wave-in: #6c9cf0; --head: #ff7a5c; --field: #1a1a19;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161615; --panel: #201f1e; --text: #ecebe7; --muted: #9c9b95; --line: #34332f;
+  --accent: #6c9cf0; --accent-soft: rgba(108,156,240,.18); --danger: #ef6a5e; --ok: #5cc28a; --warn: #e0a84a;
+  --wave: #6a6964; --wave-in: #6c9cf0; --head: #ff7a5c; --field: #1a1a19;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: 320px 1fr; height: 100vh; }
+aside { border-right: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
+.side-head { padding: 14px 14px 10px; border-bottom: 1px solid var(--line); }
+.side-head h1 { margin: 0 0 2px; font-size: 16px; }
+.counts { color: var(--muted); font-size: 12px; }
+.search { width: 100%; margin-top: 10px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); }
+.chips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+.list { overflow-y: auto; flex: 1; }
+.item { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; padding: 7px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.item:hover { background: var(--accent-soft); }
+.item.active { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.item .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .sub { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item .dur { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dot.trim { background: var(--ok); } .dot.exclude { background: var(--danger); }
+main { overflow-y: auto; padding: 18px 22px 28px; min-width: 0; }
+.title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.title h2 { margin: 0; font-size: 16px; word-break: break-all; }
+.meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.badge { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.badge.trim { color: var(--ok); border-color: var(--ok); } .badge.exclude { color: var(--danger); border-color: var(--danger); }
+.stage { margin-top: 12px; background: #000; border-radius: 10px; overflow: hidden; display: flex; justify-content: center; }
+video { display: block; max-width: 100%; max-height: 50vh; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.bar .sp { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; background: var(--panel); padding: 5px 11px; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--text); }
+.seg button:disabled { opacity: .4; cursor: default; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.danger { color: var(--danger); }
+.btn.danger:hover:not(:disabled) { border-color: var(--danger); }
+.time { font-variant-numeric: tabular-nums; color: var(--muted); }
+.timeline { margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+canvas { display: block; width: 100%; height: 96px; cursor: pointer; touch-action: none; }
+.panel { margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.sel { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px 18px; align-items: end; }
+label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.field { display: flex; gap: 6px; }
+.field input { width: 110px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); font-variant-numeric: tabular-nums; }
+.big { font-size: 18px; font-variant-numeric: tabular-nums; }
+.parts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.part { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.part.active { border-color: var(--accent); background: var(--accent-soft); }
+.part .pn { min-width: 52px; font-weight: 600; }
+.part input { width: 96px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); font-variant-numeric: tabular-nums; }
+.part .len { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; }
+.part .len.short { color: var(--danger); }
+.part .x { margin-left: auto; }
+.typed { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; align-items: center; }
+.typed input { flex: 1; min-width: 200px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.msg { margin-top: 10px; min-height: 20px; font-size: 13px; }
+.msg.err { color: var(--danger); } .msg.ok { color: var(--ok); } .msg.busy { color: var(--warn); }
+.keys { margin-top: 14px; color: var(--muted); font-size: 12px; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font: 11px ui-monospace, monospace; background: var(--panel); }
+.empty { color: var(--muted); padding: 40px; text-align: center; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; height: auto; min-height: 100vh; }
+  aside { border-right: 0; border-bottom: 1px solid var(--line); }
+  main { padding: 14px 16px 24px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="side-head">
+      <h1>Pair trimmer</h1>
+      <div class="counts" id="counts">Loading…</div>
+      <input class="search" id="search" type="search" placeholder="Search film or pair id">
+      <div class="chips" id="chips">
+        <button class="chip" data-f="all" aria-pressed="true">All</button>
+        <button class="chip" data-f="untouched" aria-pressed="false">Untouched</button>
+        <button class="chip" data-f="trim" aria-pressed="false">Trimmed</button>
+        <button class="chip" data-f="exclude" aria-pressed="false">Excluded</button>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+
+  <main id="main">
+    <div class="title">
+      <h2 id="pid">—</h2>
+      <span class="badge" id="badge">untouched</span>
+    </div>
+    <div class="meta" id="meta"></div>
+
+    <div class="stage"><video id="video" playsinline preload="auto" muted></video></div>
+    <audio id="audio" preload="auto"></audio>
+
+    <div class="bar">
+      <button class="btn" id="back" title="Previous frame (←)">◀︎ frame</button>
+      <button class="btn" id="play" title="Play / pause (Space)">Play</button>
+      <button class="btn" id="fwd" title="Next frame (→)">frame ▶︎</button>
+      <span class="time" id="clock">0.000 / 0.000 s · frame 0</span>
+      <span class="sp"></span>
+      <span class="seg" title="What you hear">
+        <button id="hearMusic" aria-pressed="true">Paired music</button>
+        <button id="hearVideo" aria-pressed="false">Video's own audio</button>
+      </span>
+      <span class="seg" id="views" title="Which version is shown"></span>
+    </div>
+
+    <div class="timeline"><canvas id="wave"></canvas></div>
+
+    <div class="panel">
+      <label>Parts to keep (each becomes its own pair)</label>
+      <div class="parts" id="parts"></div>
+      <div class="sel">
+        <div>
+          <label>Parts</label>
+          <div class="big" id="nParts">—</div>
+        </div>
+        <div>
+          <label>Kept length</label>
+          <div class="big" id="keptLen">—</div>
+        </div>
+        <div>
+          <label>Cut away</label>
+          <div class="big" id="cutLen">—</div>
+        </div>
+      </div>
+      <div class="typed">
+        <input id="typed" placeholder="Type parts in seconds, e.g. 0-30, 35-45, 53-59 (or 0:53-0:59)" spellcheck="false">
+        <button class="btn" id="useTyped" title="Replace the parts with the typed ones (Enter)">Use these parts</button>
+      </div>
+      <div class="actions">
+        <button class="btn" id="addPart" title="New part from the playhead to the next part (A)">+ Add part at playhead</button>
+        <button class="btn" id="preview" title="Play the kept parts back to back (P)">Preview kept parts</button>
+        <button class="btn primary" id="save" title="Cut video and music (S)">Save trim</button>
+        <button class="btn danger" id="exclude" title="Drop this pair from the dataset (X)">Exclude pair</button>
+        <button class="btn" id="reset" title="Back to the original, untouched">Reset to original</button>
+        <span class="sp" style="flex:1"></span>
+        <button class="btn" id="prev" title="Previous pair (B)">← Prev pair</button>
+        <button class="btn" id="next" title="Next pair (N)">Next pair →</button>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="keys">
+      <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> one frame · <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> one second ·
+      <kbd>I</kbd>/<kbd>O</kbd> set start/end of the selected part · <kbd>A</kbd> add a part at the playhead ·
+      <kbd>Del</kbd> remove the selected part · <kbd>P</kbd> preview · <kbd>S</kbd> save · <kbd>X</kbd> exclude ·
+      <kbd>N</kbd>/<kbd>B</kbd> next/previous pair. Drag the edges of the blue regions on the waveform to adjust a part;
+      click inside one to select it. Example for a 1 min clip: set the end of part 1 to 30 s, then add parts at 35 s and
+      53 s and set their ends to 45 s and 59 s (or type <kbd>0-30, 35-45, 53-59</kbd>). Each part is saved as its own
+      pair (<kbd>_p1</kbd>, <kbd>_p2</kbd>, …), never glued together. Cuts snap to video frames; the music is cut at the
+      same instants, so they stay in sync.
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const V = $("video"), A = $("audio"), C = $("wave"), ctx = C.getContext("2d");
+let pairs = [], shown = [], cur = null, view = "original", viewPart = 0, hear = "music";
+let filter = "all", query = "";
+let sel = {};                 // pair_id -> {parts: [{start, end}], active} (unsaved selections survive switching pairs)
+let peaks = [], preview = null, drag = null, busy = false;   // preview: {parts, i} while playing the kept parts
+
+try { filter = localStorage.getItem("pt.filter") || "all"; } catch (e) {}
+
+const fmt = t => (t ?? 0).toFixed(3);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const snap = t => Math.round(t * cur.fps) / cur.fps;
+const lastFrame = () => Math.floor(cur.video_duration_s * cur.fps + 1e-6) / cur.fps;
+const savedRanges = p => p.status === "trim" ? p.ranges : [];
+const keptOf = rs => rs.reduce((n, [a, b]) => n + b - a, 0);
+const vidDur = () => view === "trimmed" ? cur.ranges[viewPart][1] - cur.ranges[viewPart][0] : cur.video_duration_s;
+const S = () => sel[cur.pair_id];
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+function say(text, kind = "") { const m = $("msg"); m.textContent = text; m.className = "msg " + kind; }
+
+// ---------------------------------------------------------------- list
+function shortName(p) {
+  const m = p.pair_id.match(/bgm_(\d+)$/);
+  return (p.film ? p.film.replace(/_/g, " ") : p.pair_id) + (m ? ` · #${+m[1]}` : "");
+}
+function renderCounts() {
+  const n = s => pairs.filter(p => p.status === s).length;
+  $("counts").textContent = `${pairs.length} pairs · ${n("trim")} trimmed · ${n("exclude")} excluded`;
+}
+function renderList() {
+  const q = query.toLowerCase();
+  shown = pairs.filter(p => (filter === "all" || p.status === filter) &&
+    (!q || p.pair_id.toLowerCase().includes(q) || (p.film || "").toLowerCase().includes(q)));
+  const L = $("list");
+  L.innerHTML = "";
+  if (!shown.length) { L.innerHTML = '<div class="empty">No pairs match.</div>'; return; }
+  const frag = document.createDocumentFragment();
+  for (const p of shown) {
+    const d = document.createElement("div");
+    d.className = "item" + (cur && p.pair_id === cur.pair_id ? " active" : "");
+    d.dataset.id = p.pair_id;
+    const rs = savedRanges(p);
+    const dur = p.status === "trim" ? `${rs.length > 1 ? rs.length + " parts · " : ""}${keptOf(rs).toFixed(1)} of ${p.video_duration_s.toFixed(1)}` : p.video_duration_s.toFixed(1);
+    d.innerHTML = `<span class="dot ${p.status}"></span><div style="min-width:0"><div class="name"></div><div class="sub"></div></div><span class="dur">${dur} s</span>`;
+    d.querySelector(".name").textContent = shortName(p);
+    d.querySelector(".sub").textContent = p.source;
+    d.onclick = () => open(p.pair_id);
+    frag.appendChild(d);
+  }
+  L.appendChild(frag);
+  L.querySelector(".active")?.scrollIntoView({ block: "nearest" });
+}
+document.querySelectorAll(".chip").forEach(b => {
+  b.setAttribute("aria-pressed", String(b.dataset.f === filter));
+  b.onclick = () => {
+    filter = b.dataset.f;
+    try { localStorage.setItem("pt.filter", filter); } catch (e) {}
+    document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderList();
+  };
+});
+$("search").oninput = e => { query = e.target.value; renderList(); };
+
+// ---------------------------------------------------------------- open a pair
+function renderViews() {
+  const el = $("views"), rs = savedRanges(cur);
+  const opts = [["original", 0, "Original"]].concat(rs.map((_, i) => ["trimmed", i, rs.length > 1 ? `Saved part ${i + 1}` : "Trimmed result"]));
+  if (!rs.length) opts.push(["trimmed", 0, "Trimmed result"]);
+  el.innerHTML = "";
+  for (const [v, i, label] of opts) {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.disabled = v === "trimmed" && !rs.length;
+    b.setAttribute("aria-pressed", String(view === v && (v === "original" || viewPart === i)));
+    b.onclick = () => { if (view !== v || viewPart !== i) { view = v; viewPart = i; open(cur.pair_id, true); } };
+    el.appendChild(b);
+  }
+}
+
+async function open(id, keepView = false) {
+  V.pause(); A.pause(); preview = null;
+  cur = pairs.find(p => p.pair_id === id);
+  if (!keepView) { view = "original"; viewPart = 0; }
+  history.replaceState(null, "", "#" + encodeURIComponent(id));
+  const rs = savedRanges(cur);
+  if (!sel[id]) sel[id] = { parts: rs.length ? rs.map(([a, b]) => ({ start: a, end: b })) : [{ start: 0, end: lastFrame() }], active: 0 };
+  $("pid").textContent = id;
+  const b = $("badge");
+  b.textContent = cur.status === "trim" ? (rs.length > 1 ? `trimmed · ${rs.length} parts` : `trimmed ${fmt(rs[0][0])}–${fmt(rs[0][1])} s`)
+    : cur.status === "exclude" ? "excluded" : "untouched";
+  b.className = "badge " + cur.status;
+  $("meta").textContent = `${cur.film || "—"} · ${cur.source} · ${+cur.fps.toFixed(3)} fps · video ${fmt(cur.video_duration_s)} s · music ${fmt(cur.music_duration_s)} s`;
+  renderViews();
+  const v = Date.now(), base = view === "trimmed" ? "trimmed" : "original";
+  const part = view === "trimmed" && rs.length > 1 ? `&part=${viewPart + 1}` : "";
+  V.src = `/media/${base}/video/${encodeURIComponent(id)}?v=${v}${part}`;
+  A.src = `/media/${base}/music/${encodeURIComponent(id)}?v=${v}${part}`;
+  V.load(); A.load();
+  ["typed", "useTyped", "addPart", "preview", "save"].forEach(k => $(k).disabled = view === "trimmed");
+  $("typed").value = "";
+  syncSel();
+  renderList();
+  peaks = [];
+  drawWave();
+  try { peaks = await api(`/api/peaks/${encodeURIComponent(id)}`); } catch (e) { peaks = []; }
+  if (cur.pair_id === id) drawWave();
+  say(view === "trimmed" ? (rs.length > 1 ? `Showing saved part ${viewPart + 1} of ${rs.length} (pair ${id}_p${viewPart + 1}).` : "Showing the saved trimmed files.") : "");
+}
+
+// ---------------------------------------------------------------- playback, kept in sync
+function setHear(h) {
+  hear = h;
+  $("hearMusic").setAttribute("aria-pressed", String(h === "music"));
+  $("hearVideo").setAttribute("aria-pressed", String(h === "video"));
+  V.muted = h !== "video";
+  if (h === "music" && !V.paused) { A.currentTime = V.currentTime; A.play().catch(() => {}); } else A.pause();
+}
+$("hearMusic").onclick = () => setHear("music");
+$("hearVideo").onclick = () => setHear("video");
+
+function play() {
+  if (V.ended || V.currentTime >= vidDur() - 0.01) V.currentTime = 0;
+  A.currentTime = V.currentTime;
+  V.play().catch(() => {});
+  if (hear === "music") A.play().catch(() => {});
+}
+function pause() { V.pause(); A.pause(); preview = null; }
+function toggle() { V.paused ? play() : pause(); }
+function step(dt) {
+  pause();
+  const f = Math.round(V.currentTime * cur.fps) + Math.round(dt * cur.fps);
+  V.currentTime = Math.min(Math.max(0, f / cur.fps + 0.001), vidDur());
+}
+V.onpause = () => { A.pause(); $("play").textContent = "Play"; };
+V.onplay = () => { $("play").textContent = "Pause"; };
+V.onseeking = () => { A.currentTime = V.currentTime; };
+V.onended = () => { A.pause(); preview = null; };
+setInterval(() => {   // keep the music locked to the picture
+  if (cur && !V.paused && hear === "music" && !A.ended && Math.abs(A.currentTime - V.currentTime) > 0.05) A.currentTime = V.currentTime;
+}, 200);
+$("play").onclick = toggle;
+$("back").onclick = () => step(-1 / cur.fps);
+$("fwd").onclick = () => step(1 / cur.fps);
+
+function tick() {
+  if (cur) {
+    if (preview && V.currentTime >= preview.parts[preview.i].end) {   // jump over the cut-away gaps
+      const next = preview.parts[++preview.i];
+      if (next) V.currentTime = next.start + 0.001;
+      else { const end = preview.parts[preview.i - 1].end; pause(); V.currentTime = end; }
+    }
+    const t = V.currentTime;
+    $("clock").textContent = `${fmt(t)} / ${fmt(vidDur())} s · frame ${Math.floor(t * cur.fps + 1e-6)}`;
+    drawWave();
+  }
+  requestAnimationFrame(tick);
+}
+
+// ---------------------------------------------------------------- selection: the parts to keep, sorted, never overlapping
+function partsText(parts) { return parts.map(p => `${+p.start.toFixed(3)}-${+p.end.toFixed(3)}`).join(", "); }
+function syncSel() {
+  const L = $("parts"), trimmed = view === "trimmed";
+  const parts = trimmed ? cur.ranges.map(([a, b]) => ({ start: a, end: b })) : S().parts;
+  const active = trimmed ? viewPart : S().active;
+  L.innerHTML = "";
+  parts.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "part" + (i === active ? " active" : "");
+    const len = p.end - p.start;
+    row.innerHTML = `<span class="pn">Part ${i + 1}</span>
+      <input type="number" min="0" step="${(1 / cur.fps).toFixed(4)}" value="${fmt(p.start)}" aria-label="Part ${i + 1} start (s)">
+      <button class="btn" title="Start at playhead (I)">Set start</button><span>–</span>
+      <input type="number" min="0" step="${(1 / cur.fps).toFixed(4)}" value="${fmt(p.end)}" aria-label="Part ${i + 1} end (s)">
+      <button class="btn" title="End at playhead (O)">Set end</button>
+      <span class="len${len < 0.5 - 1e-9 ? " short" : ""}" title="${len < 0.5 - 1e-9 ? "Shorter than 0.5 s: it will not save" : ""}">${fmt(len)} s</span>
+      <button class="btn danger x" title="Remove this part (Del)">Remove</button>`;
+    const [inS, inE] = row.querySelectorAll("input"), [bS, bE, bX] = row.querySelectorAll("button");
+    row.querySelectorAll("input, button").forEach(el => el.disabled = trimmed);
+    bX.disabled = trimmed || parts.length < 2;
+    if (!trimmed) {
+      row.onclick = ev => { if (S().active !== i) { S().active = i; if (!ev.target.matches("input")) syncSel(); } };
+      inS.onchange = e => setSel(i, "start", +e.target.value);
+      inE.onchange = e => setSel(i, "end", +e.target.value);
+      bS.onclick = () => setSel(i, "start", V.currentTime);
+      bE.onclick = () => setSel(i, "end", V.currentTime);
+      bX.onclick = ev => { ev.stopPropagation(); removePart(i); };
+    }
+    L.appendChild(row);
+  });
+  const kept = parts.reduce((n, p) => n + p.end - p.start, 0);
+  $("nParts").textContent = parts.length;
+  $("keptLen").textContent = fmt(kept) + " s";
+  $("cutLen").textContent = fmt(cur.video_duration_s - kept) + " s";
+}
+function setSel(i, which, t) {
+  const ps = S().parts, p = ps[i], f = 1 / cur.fps;
+  const lo = i > 0 ? ps[i - 1].end : 0, hi = i < ps.length - 1 ? ps[i + 1].start : lastFrame();
+  t = Math.min(Math.max(lo, snap(t)), hi);
+  if (which === "start") p.start = Math.min(t, p.end - f);
+  else p.end = Math.max(t, p.start + f);
+  S().active = i;
+  syncSel();
+}
+function addPart() {
+  const ps = S().parts, t = snap(V.currentTime), f = 1 / cur.fps;
+  const inside = ps.findIndex(p => t >= p.start - 1e-6 && t < p.end - 1e-6);
+  if (inside >= 0) { say(`The playhead is inside part ${inside + 1}. Move it into a cut-away gap, or first set the end of part ${inside + 1}.`, "err"); return; }
+  const i = ps.filter(p => p.end <= t + 1e-6).length;       // insert keeping the order
+  const end = i < ps.length ? ps[i].start : lastFrame();
+  if (end - t < f - 1e-9) { say("No room for a new part here.", "err"); return; }
+  ps.splice(i, 0, { start: t, end });
+  S().active = i;
+  syncSel();
+  say(`Part ${i + 1} added from ${fmt(t)} s. Now set its end (O).`);
+}
+function removePart(i) {
+  const s = S();
+  if (s.parts.length < 2) return;
+  s.parts.splice(i, 1);
+  s.active = Math.min(s.active, s.parts.length - 1);
+  syncSel();
+}
+function parseTime(x) {
+  const m = x.split(":").map(Number);
+  return m.length === 2 ? m[0] * 60 + m[1] : m.length === 3 ? m[0] * 3600 + m[1] * 60 + m[2] : m[0];
+}
+function useTyped() {
+  const txt = $("typed").value, re = /([\d.:]+)\s*(?:-|–|to)\s*([\d.:]+)/g, out = [];
+  for (const m of txt.matchAll(re)) {
+    const a = snap(parseTime(m[1])), b = Math.min(snap(parseTime(m[2])), lastFrame());
+    if (!isFinite(a) || !isFinite(b) || b <= a) { say(`Could not read "${m[0]}": the end must be after the start.`, "err"); return; }
+    out.push({ start: a, end: b });
+  }
+  if (!out.length) { say('Type parts like "0-30, 35-45, 53-59" (seconds, or m:ss).', "err"); return; }
+  out.sort((p, q) => p.start - q.start);
+  for (let i = 1; i < out.length; i++)
+    if (out[i].start < out[i - 1].end - 1e-6) { say(`Parts overlap: ${partsText([out[i - 1]])} and ${partsText([out[i]])}.`, "err"); return; }
+  if (out.some(p => p.start >= cur.video_duration_s)) { say(`A part starts after the end of the video (${fmt(cur.video_duration_s)} s).`, "err"); return; }
+  S().parts = out; S().active = 0;
+  syncSel();
+  say(`${out.length} part${out.length > 1 ? "s" : ""}: ${partsText(out)} s. Preview (P), then Save (S).`, "ok");
+}
+$("useTyped").onclick = useTyped;
+$("typed").onkeydown = e => { if (e.key === "Enter") useTyped(); };
+$("addPart").onclick = addPart;
+$("preview").onclick = () => {
+  const parts = S().parts.map(p => ({ ...p }));
+  V.currentTime = parts[0].start + 0.001;
+  play();
+  preview = { parts, i: 0 };
+};
+
+// ---------------------------------------------------------------- waveform timeline
+function drawWave() {
+  const dpr = window.devicePixelRatio || 1, w = C.clientWidth, h = C.clientHeight;
+  if (C.width !== Math.round(w * dpr)) { C.width = Math.round(w * dpr); C.height = Math.round(h * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  if (!cur) return;
+  const D = vidDur(), x = t => t / D * w, mid = h / 2 - 6, amp = mid - 4;
+  const trimmed = view === "trimmed", ps = S().parts;
+  const k0 = trimmed ? cur.ranges[viewPart][0] : 0;        // music time shown at x = 0
+  const inSel = t => trimmed || ps.some(p => t >= p.start && t <= p.end);
+  if (!trimmed) {
+    ctx.fillStyle = css("--accent-soft");
+    ps.forEach((p, i) => { ctx.fillRect(x(p.start), 0, x(p.end) - x(p.start), h - 14); if (i === S().active) ctx.fillRect(x(p.start), 0, x(p.end) - x(p.start), h - 14); });
+  }
+  if (peaks.length) {
+    const per = cur.music_duration_s / peaks.length;
+    const cIn = css("--wave-in"), cOut = css("--wave");
+    for (let px = 0; px < w; px++) {
+      const t = px / w * D, i = Math.floor((t + k0) / per);
+      if (i < 0 || i >= peaks.length) continue;
+      const a = Math.max(1, peaks[i] * amp);
+      ctx.fillStyle = inSel(t) ? cIn : cOut;
+      ctx.fillRect(px, mid - a, 1, a * 2);
+    }
+  } else {
+    ctx.fillStyle = css("--muted"); ctx.font = "12px system-ui"; ctx.fillText("loading waveform…", 8, mid);
+  }
+  if (!trimmed) {                                        // handles and part numbers
+    ctx.fillStyle = css("--accent"); ctx.font = "bold 11px system-ui";
+    ps.forEach((p, i) => {
+      for (const t of [p.start, p.end]) { ctx.fillRect(x(t) - 1.5, 0, 3, h - 14); ctx.fillRect(x(t) - 5, 0, 10, 8); }
+      if (ps.length > 1 && x(p.end) - x(p.start) > 14) ctx.fillText(String(i + 1), x(p.start) + 6, 20);
+    });
+  }
+  ctx.fillStyle = css("--muted"); ctx.font = "11px system-ui";   // ticks every 1/2/5 s
+  const stepS = D > 60 ? 10 : D > 25 ? 5 : D > 10 ? 2 : 1;
+  for (let t = 0; t <= D + 1e-6; t += stepS) { ctx.fillRect(x(t), h - 14, 1, 4); ctx.fillText(t + "s", Math.min(x(t) + 2, w - 24), h - 2); }
+  ctx.fillStyle = css("--head");
+  ctx.fillRect(x(V.currentTime) - 1, 0, 2, h - 14);
+}
+function tAt(ev) { const r = C.getBoundingClientRect(); return Math.min(Math.max(0, (ev.clientX - r.left) / r.width), 1) * vidDur(); }
+function edgeAt(t) {        // the part edge within 8 px of time t, as {i, which}, or null
+  if (view !== "original") return null;
+  const tol = 8 / C.clientWidth * vidDur();
+  let best = null, bd = tol;
+  S().parts.forEach((p, i) => { for (const which of ["start", "end"]) { const d = Math.abs(t - p[which]); if (d < bd) { bd = d; best = { i, which }; } } });
+  return best;
+}
+C.onpointerdown = ev => {
+  if (!cur) return;
+  C.setPointerCapture(ev.pointerId);
+  const t = tAt(ev);
+  drag = edgeAt(t) || "seek";
+  if (drag === "seek") {
+    pause(); V.currentTime = t;
+    const i = view === "original" ? S().parts.findIndex(p => t >= p.start && t <= p.end) : -1;
+    if (i >= 0 && i !== S().active) { S().active = i; syncSel(); }
+  } else setSel(drag.i, drag.which, t);
+};
+C.onpointermove = ev => {
+  if (!cur) return;
+  const t = tAt(ev);
+  if (!drag) { C.style.cursor = edgeAt(t) ? "ew-resize" : "pointer"; return; }
+  if (drag === "seek") V.currentTime = t; else { setSel(drag.i, drag.which, t); V.currentTime = S().parts[drag.i][drag.which] + 0.001; }
+};
+C.onpointerup = () => { drag = null; };
+window.onresize = drawWave;
+
+// ---------------------------------------------------------------- save / exclude / reset
+async function act(kind) {
+  if (busy || !cur) return;
+  const id = cur.pair_id, s = sel[id];
+  if (kind === "trim" && s.parts.some(p => p.end - p.start < 0.5 - 1e-9)) { say("Every part must be at least 0.5 s long.", "err"); return; }
+  if (kind === "exclude" && !confirm("Exclude this pair from the dataset? You can undo it with Reset.")) return;
+  busy = true; pause();
+  ["save", "exclude", "reset"].forEach(k => $(k).disabled = true);
+  say(kind === "trim" ? "Cutting video and music…" : "Saving…", "busy");
+  try {
+    const r = await api(`/api/${kind}`, kind === "trim" ? { pair_id: id, ranges: s.parts.map(p => [p.start, p.end]) } : { pair_id: id });
+    const p = pairs.find(q => q.pair_id === id);
+    p.status = r.action; p.ranges = r.ranges ?? null;
+    if (kind === "trim") sel[id] = { parts: r.ranges.map(([a, b]) => ({ start: a, end: b })), active: 0 };
+    if (kind === "reset") delete sel[id];
+    renderCounts();
+    await open(id);
+    const rs = r.ranges || [];
+    say(kind === "trim" ? (rs.length > 1 ? `Saved ${rs.length} parts as pairs ${id.slice(-12)}_p1…_p${rs.length}: ${rs.map(([a, b]) => `${fmt(a)}–${fmt(b)}`).join(", ")} s. Click "Saved part 1" etc. to check them.`
+        : `Saved: kept ${fmt(rs[0][0])}–${fmt(rs[0][1])} s (${fmt(rs[0][1] - rs[0][0])} s). Click "Trimmed result" to check it.`)
+      : kind === "exclude" ? "Excluded: this pair is left out of trimmed/pairs.csv." : "Reset: back to the original files.", "ok");
+  } catch (e) {
+    say("Failed: " + e.message, "err");
+  } finally {
+    busy = false;
+    ["exclude", "reset"].forEach(k => $(k).disabled = false);
+    $("save").disabled = view === "trimmed";
+  }
+}
+$("save").onclick = () => act("trim");
+$("exclude").onclick = () => act("exclude");
+$("reset").onclick = () => act("reset");
+function move(d) {
+  const i = shown.findIndex(p => p.pair_id === cur?.pair_id);
+  const n = shown[Math.min(Math.max(0, i + d), shown.length - 1)];
+  if (n) open(n.pair_id);
+}
+$("prev").onclick = () => move(-1);
+$("next").onclick = () => move(1);
+
+document.addEventListener("keydown", ev => {
+  if (!cur || ev.target.matches?.("input, select, textarea") || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  const k = ev.key.toLowerCase();
+  const map = {
+    " ": toggle, arrowleft: () => step(ev.shiftKey ? -1 : -1 / cur.fps), arrowright: () => step(ev.shiftKey ? 1 : 1 / cur.fps),
+    i: () => view === "original" && setSel(S().active, "start", V.currentTime), o: () => view === "original" && setSel(S().active, "end", V.currentTime),
+    a: () => view === "original" && addPart(), delete: () => view === "original" && removePart(S().active),
+    backspace: () => view === "original" && removePart(S().active),
+    p: () => view === "original" && $("preview").onclick(), s: () => view === "original" && act("trim"), x: () => act("exclude"),
+    n: () => move(1), b: () => move(-1),
+  };
+  if (map[k]) { ev.preventDefault(); map[k](); }
+});
+
+// ---------------------------------------------------------------- start
+(async () => {
+  try {
+    pairs = await api("/api/pairs");
+  } catch (e) { $("counts").textContent = "Could not load pairs: " + e.message; return; }
+  renderCounts();
+  renderList();
+  const want = decodeURIComponent(location.hash.slice(1));
+  const first = pairs.find(p => p.pair_id === want) || shown[0] || pairs[0];
+  if (first) await open(first.pair_id);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
