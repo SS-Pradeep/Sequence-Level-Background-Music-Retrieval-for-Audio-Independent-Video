@@ -1,0 +1,709 @@
+<title>Keep or Switch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, interactive panels break out wider, like a cue sheet laid beside an edit timeline. */
+:root {
+  --bg: #f4f5f7; --panel: #ffffff; --ink: #17191e; --ink-2: #4a4f5a; --muted: #7b808b; --line: #d9dce2; --faint: #c9cdd5;
+  --accent: #1f5fd1; --switch: #d1365f; --jump: #b4741a; --good: #1d8a5a; --bad: #c2412c; --tint: #eef1f6;
+  --a: #3b6fd8; --b: #13a07a; --c: #8c5bd6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --other: #b4b6bd;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121419; --panel: #1b1e25; --ink: #eceef2; --ink-2: #b9bec8; --muted: #8a909b; --line: #2e333d; --faint: #3a404b;
+  --accent: #6c9cf0; --switch: #f0628a; --jump: #e0a04a; --good: #4cc08a; --bad: #ef7a62; --tint: #232733;
+  --a: #6f97f0; --b: #3cc79c; --c: #ae86ef; --other: #5d626c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121419; --panel: #1b1e25; --ink: #eceef2; --ink-2: #b9bec8; --muted: #8a909b; --line: #2e333d; --faint: #3a404b;
+  --accent: #6c9cf0; --switch: #f0628a; --jump: #e0a04a; --good: #4cc08a; --bad: #ef7a62; --tint: #232733;
+  --a: #6f97f0; --b: #3cc79c; --c: #ae86ef; --other: #5d626c; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px }
+main { max-width: 1080px; margin: 0 auto; display: grid; gap: 56px }
+.prose { max-width: 68ch }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.12; text-wrap: balance; margin: 0 }
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -0.02em }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em }
+h3 { font-size: 1.12rem; font-weight: 500 }
+p { margin: 0 }
+section { display: grid; gap: 18px }
+.eyebrow { font: 500 0.75rem/1 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted) }
+.lede { font-size: 1.15rem; color: var(--ink-2); max-width: 62ch }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; min-width: 0 }
+.scroll { overflow-x: auto; min-width: 0 }
+svg text { fill: var(--ink); font-family: var(--f-body) }
+svg .mono { font-family: var(--f-mono) }
+.muted { color: var(--muted) }
+em.k { font-style: normal; font-weight: 600 }
+.k-cont { color: var(--ink) } .k-jump { color: var(--jump) } .k-switch { color: var(--switch) }
+
+header.hero { padding-top: 48px; display: grid; gap: 16px }
+.film-head { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline }
+.film-head .mono { font-size: 0.82rem; color: var(--muted) }
+
+/* timeline bands */
+.bands { width: 100%; min-width: 640px; display: block }
+.bandlabel { font: 500 12px var(--f-body); fill: var(--ink-2) }
+
+/* moves */
+.moves { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px }
+.move { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0 }
+.move h3 { display: flex; gap: 10px; align-items: center }
+.move .cost { font: 500 0.95rem var(--f-mono); background: var(--tint); border-radius: 6px; padding: 6px 10px; justify-self: start }
+.move svg { width: 100%; height: 54px }
+.move p { color: var(--ink-2); font-size: 0.95rem }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end }
+.ctl { display: grid; gap: 4px; min-width: 170px; flex: 1 1 170px }
+.ctl label { font-size: 0.85rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px }
+.ctl output { font: 500 0.85rem var(--f-mono); color: var(--ink) }
+input[type=range] { width: 100%; accent-color: var(--accent) }
+.btns { display: flex; flex-wrap: wrap; gap: 8px }
+button { font: 500 0.88rem var(--f-body); color: var(--ink); background: var(--panel); border: 1px solid var(--faint);
+  border-radius: 7px; padding: 7px 12px; cursor: pointer }
+button:hover { border-color: var(--accent) }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+button[aria-pressed=true] { background: var(--tint); border-color: var(--accent) }
+button:disabled { opacity: 0.4; cursor: default }
+.seg { display: inline-flex; border: 1px solid var(--faint); border-radius: 8px; overflow: hidden }
+.seg button { border: 0; border-radius: 0 }
+.seg button + button { border-left: 1px solid var(--faint) }
+
+/* toy */
+.toy-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: start }
+@media (max-width: 860px) { .toy-grid { grid-template-columns: minmax(0, 1fr) } }
+#toy svg { width: 100%; height: auto; display: block; min-width: 520px }
+.node { cursor: pointer }
+.narr { background: var(--tint); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; min-height: 92px }
+.narr b { font-family: var(--f-display); font-weight: 500; font-size: 1.05rem }
+.calc { display: grid; gap: 8px; min-width: 0 }
+.calc table { width: 100%; border-collapse: collapse; font-size: 0.86rem }
+.calc td, .calc th { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap }
+.calc th { font-weight: 500; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em }
+.calc td.num, .calc th.num { text-align: right }
+.calc tr.best td { background: var(--tint); font-weight: 600 }
+.sum { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.92rem }
+.sum .num { font-weight: 500 }
+.chip { display: inline-block; font: 600 0.78rem var(--f-mono); padding: 1px 7px; border-radius: 5px; color: #fff; vertical-align: 1px }
+
+/* real */
+#real-chart { width: 100%; min-width: 720px; display: block }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px }
+.stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px }
+.stat .v { font: 500 1.5rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums }
+.stat .l { font-size: 0.8rem; color: var(--muted) }
+.stat .d { font-size: 0.8rem }
+.sweeps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px }
+.sweeps svg { width: 100%; height: auto; display: block }
+table.moves-t { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 640px }
+table.moves-t th, table.moves-t td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap }
+table.moves-t th { font-weight: 500; color: var(--muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em }
+table.moves-t td.num { text-align: right; font-family: var(--f-mono) }
+.note { font-size: 0.9rem; color: var(--ink-2); border-left: 3px solid var(--line); padding-left: 12px }
+.formula { font: 500 1rem/1.7 var(--f-mono); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; overflow-x: auto }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px }
+ul.tight { margin: 0; padding-left: 1.2em; display: grid; gap: 6px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+</style>
+
+<main>
+  <header class="hero">
+    <span class="eyebrow">Video-to-BGM retrieval · stitching step</span>
+    <h1>Keep or switch?</h1>
+    <p class="lede">For every scene of a silent video, retrieval gives a ranked list of music windows that fit it.
+      Taking the best one for each scene makes the soundtrack change every few seconds. The Viterbi step picks one window per
+      scene for the <em>whole video at once</em>, trading how well each window fits against how often the music changes.</p>
+    <div class="panel">
+      <div class="film-head">
+        <h3>A real test video: 4 clips of <i>7aum Arivu</i>, 72 s, 4 different songs</h3>
+        <span class="mono">title split · fold 1 · held-out · fold-1 models only</span>
+      </div>
+      <div class="scroll"><svg id="hero-bands" class="bands" viewBox="0 0 1000 170" role="img" aria-label="True music, best-per-scene choice and Viterbi choice over time"></svg></div>
+      <p class="muted" style="font-size:.9rem">Each bar is the song playing; a thin white gap is a music change. <b>Best per scene</b> changes the music
+        <span id="hero-g" class="num"></span> times. <b>Viterbi</b> (penalties tuned on validation videos) changes it
+        <span id="hero-v" class="num"></span> times, and 3 of those land exactly on the 3 true changes. Labels: S1–S4 are the true songs, letters are other songs in the library.</p>
+    </div>
+  </header>
+
+  <section>
+    <span class="eyebrow">1 · The three moves</span>
+    <h2>Between two scenes, the music can do one of three things</h2>
+    <p class="prose">Every route through the video is a chain of these moves. Each move has a price, paid in the same units as the fit score,
+      so the algorithm can weigh "this window fits better" against "but the music would have to change".</p>
+    <div class="moves">
+      <div class="move">
+        <h3><em class="k k-cont">Continue</em></h3>
+        <svg viewBox="0 0 240 54" aria-hidden="true"><rect x="8" y="16" width="108" height="22" rx="4" fill="var(--a)"/><rect x="120" y="16" width="112" height="22" rx="4" fill="var(--a)"/>
+          <text x="62" y="31" text-anchor="middle" font-size="11" style="fill:#fff">A 12–18 s</text><text x="176" y="31" text-anchor="middle" font-size="11" style="fill:#fff">A 18–23 s</text>
+          <line x1="118" y1="10" x2="118" y2="44" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 2"/></svg>
+        <span class="cost">cost 0</span>
+        <p>Same song, picking up exactly where the last scene left off. You hear no seam at all.</p>
+      </div>
+      <div class="move">
+        <h3><em class="k k-jump">Jump</em></h3>
+        <svg viewBox="0 0 240 54" aria-hidden="true"><rect x="8" y="16" width="108" height="22" rx="4" fill="var(--a)"/><rect x="120" y="16" width="112" height="22" rx="4" fill="var(--a)"/>
+          <text x="62" y="31" text-anchor="middle" font-size="11" style="fill:#fff">A 18–23 s</text><text x="176" y="31" text-anchor="middle" font-size="11" style="fill:#fff">A 64–71 s</text>
+          <line x1="118" y1="10" x2="118" y2="44" stroke="var(--jump)" stroke-width="2"/></svg>
+        <span class="cost">cost λ<sub>jump</sub></span>
+        <p>Same song, but a different part of it, for example skipping to the chorus. A small seam, same instruments and key.</p>
+      </div>
+      <div class="move">
+        <h3><em class="k k-switch">Switch</em></h3>
+        <svg viewBox="0 0 240 54" aria-hidden="true"><rect x="8" y="16" width="108" height="22" rx="4" fill="var(--a)"/><rect x="120" y="16" width="112" height="22" rx="4" fill="var(--b)"/>
+          <text x="62" y="31" text-anchor="middle" font-size="11" style="fill:#fff">A 64–71 s</text><text x="176" y="31" text-anchor="middle" font-size="11" style="fill:#fff">B 31–37 s</text>
+          <line x1="118" y1="10" x2="118" y2="44" stroke="var(--switch)" stroke-width="2.5"/></svg>
+        <span class="cost">cost λ<sub>switch</sub> + μ·(Δkey + Δtempo)</span>
+        <p>A different song. The base price λ<sub>switch</sub>, plus μ times how far apart the two songs are in key and tempo, so clashing changes cost more.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="toy">
+    <span class="eyebrow">2 · Watch it work</span>
+    <h2>The algorithm, one scene at a time</h2>
+    <p class="prose">A small made-up example: 4 scenes, each with its 3 best-fitting windows plus the window that would <em>continue</em>
+      the previous scene's music (dashed). The number in each box is the window's fit. Viterbi walks left to right. For every box it
+      remembers only the best way to arrive there (the dark arrow) and that route's total score (the pill). At the end it takes the
+      best final box and follows the arrows back. Press <b>Start over</b> and then <b>Next</b>, and click any box to see its arithmetic.</p>
+    <div class="panel">
+      <div class="controls">
+        <div class="btns">
+          <button id="t-reset">Start over</button>
+          <button id="t-back">◀ Back</button>
+          <button id="t-next" class="primary">Next ▶</button>
+          <button id="t-end">Show result</button>
+        </div>
+        <div class="btns" role="group" aria-label="Penalty presets">
+          <button data-tp="0,0,0">No penalty</button>
+          <button data-tp="2,1,0.5">Default</button>
+          <button data-tp="6,3,0.5">High penalty</button>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="t-ls"><span>switch penalty λ<sub>switch</sub></span> <output id="t-ls-o"></output></label><input id="t-ls" type="range" min="0" max="8" step="0.1" value="2"></div>
+        <div class="ctl"><label for="t-lj"><span>jump penalty λ<sub>jump</sub></span> <output id="t-lj-o"></output></label><input id="t-lj" type="range" min="0" max="4" step="0.1" value="1"></div>
+        <div class="ctl"><label for="t-mu"><span>key/tempo weight μ</span> <output id="t-mu-o"></output></label><input id="t-mu" type="range" min="0" max="2" step="0.1" value="0.5"></div>
+      </div>
+      <div class="toy-grid">
+        <div class="scroll"><svg id="toy-svg" viewBox="0 0 700 410" role="img" aria-label="Viterbi trellis for the toy example"></svg></div>
+        <div class="calc">
+          <div class="narr" id="t-narr" aria-live="polite"></div>
+          <div id="t-calc"></div>
+        </div>
+      </div>
+      <div class="sum" id="t-sum"></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">3 · The rule behind it</span>
+    <h2>Why it only needs one pass</h2>
+    <div class="two">
+      <div class="prose" style="display:grid;gap:12px">
+        <p>Write <span class="mono">best(s, w)</span> for the highest total score of any route that ends at window <span class="mono">w</span> in scene <span class="mono">s</span>.
+          The best route into <span class="mono">w</span> must come from <em>some</em> window <span class="mono">w′</span> of the previous scene,
+          and from there it is only worth taking the best route into <span class="mono">w′</span>. So:</p>
+        <div class="formula">best(s, w) = fit(w) + max<sub>w′</sub> [ best(s−1, w′) − move(w′ → w) ]</div>
+        <p>That is the whole algorithm: fill in <span class="mono">best</span> column by column, keep an arrow to the winning <span class="mono">w′</span>,
+          and read the route back from the best final window. The total it maximizes is</p>
+        <div class="formula">Σ fit of the chosen windows − Σ move costs paid</div>
+      </div>
+      <div class="prose" style="display:grid;gap:12px">
+        <p><b>Why not just try every route?</b> On the real video above there are <span class="num" id="n-routes"></span> possible routes.
+          Viterbi does <span class="num" id="n-ops"></span> comparisons instead, and still finds the single best one, exactly.</p>
+        <p><b>Why not decide scene by scene?</b> Because a good choice now can depend on what comes later. In the example,
+          keeping song A in scene 2 only pays off because a strong A window waits in scene 3. A left-to-right greedy rule cannot see that.</p>
+        <p class="note">In the code the same thing is written as a cost to minimize, <span class="mono">−z + move cost</span>
+          (<span class="mono">src/bgm/retrieval/stitch.py</span>). Maximizing score and minimizing cost give the same route.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="real">
+    <span class="eyebrow">4 · Turn the penalty up and down</span>
+    <h2>The real video, with live Viterbi</h2>
+    <p class="prose">These are the actual candidates for the 11 scenes of the test video: each dot is one music window, placed by how well it fits
+      the scene (higher is better), coloured by song. The line is the route Viterbi picks for the current settings, recomputed in your browser on
+      the same candidates and with the same rule as the paper's system. At the start settings it reproduces the system's saved choices exactly.</p>
+    <div class="panel">
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Decoder">
+          <button id="m-fixed" aria-pressed="true">Fixed penalties</button>
+          <button id="m-cue" aria-pressed="false">Change predictor</button>
+        </div>
+        <div class="btns" id="r-presets"></div>
+      </div>
+      <div class="controls" id="r-fixed-ctl">
+        <div class="ctl"><label for="r-ls"><span>switch penalty λ<sub>switch</sub></span> <output id="r-ls-o"></output></label><input id="r-ls" type="range" min="0" max="6" step="0.05" value="1"></div>
+        <div class="ctl"><label for="r-lj"><span>jump penalty λ<sub>jump</sub></span> <output id="r-lj-o"></output></label><input id="r-lj" type="range" min="0" max="3" step="0.05" value="0.25"></div>
+        <div class="ctl"><label for="r-mu"><span>key/tempo weight μ</span> <output id="r-mu-o"></output></label><input id="r-mu" type="range" min="0" max="2" step="0.05" value="0"></div>
+      </div>
+      <div class="controls" id="r-cue-ctl" hidden>
+        <div class="ctl"><label for="r-al"><span>trust in the predictor α</span> <output id="r-al-o"></output></label><input id="r-al" type="range" min="0" max="4" step="any" value="1.15"></div>
+        <div class="ctl"><label for="r-cj"><span>extra jump cost λ<sub>jump</sub></span> <output id="r-cj-o"></output></label><input id="r-cj" type="range" min="-2" max="2" step="0.05" value="-0.25"></div>
+        <div class="ctl"><label for="r-cm"><span>key/tempo weight μ</span> <output id="r-cm-o"></output></label><input id="r-cm" type="range" min="0" max="2" step="0.05" value="0"></div>
+      </div>
+      <p class="note" id="r-mode-note"></p>
+      <div class="stats" id="r-stats"></div>
+      <div class="scroll"><svg id="real-bands" class="bands" viewBox="0 0 1000 116" role="img" aria-label="True music and chosen music over time"></svg></div>
+      <div class="scroll"><svg id="real-chart" viewBox="0 0 1000 470" role="img" aria-label="Candidates per scene and the chosen route"></svg></div>
+      <div class="sweeps" id="r-sweeps"></div>
+      <div class="scroll"><table class="moves-t" id="r-table"></table></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">5 · What the penalty does</span>
+    <h2>Too low flickers, too high misses changes</h2>
+    <div class="two">
+      <div class="prose" style="display:grid;gap:12px">
+        <p><b>No penalty</b> (λ = 0): every scene takes its own best window. On the test video the music changes 9 times in 72 s, 6 of them where
+          the film keeps the same song.</p>
+        <p><b>Tuned penalty</b> (λ<sub>switch</sub> ≈ 1): a change has to earn about one standard deviation of fit. The music changes 4 times, and
+          3 of the 4 are the true changes.</p>
+        <p><b>High penalty</b> (λ<sub>switch</sub> ≥ 3): changing is so expensive that the route holds one song across a real change. Only 2 changes are left,
+          and the 42.8 s change is missed.</p>
+        <p class="note">Viterbi only chooses among what retrieval offers. Songs S3 and S4 never appear among the candidates of this video,
+          so no setting can pick them. Stitching fixes <em>when</em> the music changes, not <em>which</em> songs retrieval found.</p>
+      </div>
+      <div class="prose" style="display:grid;gap:12px">
+        <p><b>How the values are chosen.</b> Per fold, on validation videos only (never test): a grid over λ<sub>switch</sub> ∈ {0.5, 1, 2, 4, 8, never},
+          λ<sub>jump</sub> ∈ {0.25, 0.5, 1, 2}, μ ∈ {0, 0.5, 1}, scored by how often the right song plays plus how well music changes line up with true changes.</p>
+        <p><b>Result on the test set</b> (title split, 5 folds, 50 joined test videos per fold):</p>
+        <ul class="tight">
+          <li>music changes within ±1 s of a true change (F1): <span class="num">0.730</span> Viterbi vs <span class="num">0.602</span> best-per-scene, Δ <span class="num">+0.128 [+0.109, +0.148]</span></li>
+          <li>changes per minute: <span class="num">3.4</span> vs <span class="num">6.2</span></li>
+          <li>time the right song plays: <span class="num">0.073</span> vs <span class="num">0.051</span></li>
+        </ul>
+        <p><b>Change predictor.</b> The final system replaces the single λ<sub>switch</sub> with a price for each boundary, from a model that reads the
+          video and estimates the chance <span class="mono">p</span> that the music changes there: continue costs <span class="mono">−α·log(1−p)</span>,
+          switch <span class="mono">−α·log p</span>. Most of its gain comes from segment length rather than the picture; see boundary 4 in the predictor view above.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script id="lattice" type="application/json">/*DATA*/null</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("lattice").textContent);
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 2) => (Math.abs(x) < 5e-13 ? 0 : x).toFixed(d);
+function el(tag, attrs = {}, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+/* ---------- the stitching rule (port of transition_cost / viterbi, src/bgm/retrieval/stitch.py) ---------- */
+function fifths(a, b) { if (a < 0 || b < 0) return 0.5; const d = Math.abs((7 * a) % 12 - (7 * b) % 12); return Math.min(d, 12 - d) / 6; }
+function tempoD(a, b) { if (!(a > 0 && b > 0)) return 0.5; const r = Math.abs(Math.log2(b / a)); return 2 * Math.abs(r - Math.round(r)); }
+function move(a, b, pen, tol) {
+  if (a.f === b.f) {
+    if (Math.abs(b.off - (a.off + a.dur)) <= tol) return { kind: "continue", cost: pen.cont || 0 };
+    return { kind: "jump", cost: pen.jump };
+  }
+  const delta = fifths(a.key, b.key) + tempoD(a.tempo, b.tempo);
+  return { kind: "switch", cost: pen.sw + pen.mu * delta, delta };
+}
+/* Maximizes sum(z) - sum(move cost); ties go to the first index, as numpy argmin does on the cost form. */
+function viterbi(layers, penAt, tol) {
+  const V = [layers[0].map(c => c.z)], B = [layers[0].map(() => -1)];
+  for (let i = 1; i < layers.length; i++) {
+    const pen = penAt(i - 1), vi = [], bi = [];
+    for (const c of layers[i]) {
+      let best = -Infinity, arg = -1;
+      layers[i - 1].forEach((p, k) => { const t = V[i - 1][k] - move(p, c, pen, tol).cost; if (t > best) { best = t; arg = k; } });
+      vi.push(best + c.z); bi.push(arg);
+    }
+    V.push(vi); B.push(bi);
+  }
+  const last = V[V.length - 1];
+  let j = 0; last.forEach((v, k) => { if (v > last[j]) j = k; });
+  const path = [j];
+  for (let i = layers.length - 1; i > 0; i--) { j = B[i][j]; path.push(j); }
+  return { path: path.reverse(), V, B };
+}
+function greedy(layers, nTop) {
+  return layers.map((L, i) => { const n = nTop ? nTop[i] : L.length; let j = 0; for (let k = 1; k < n; k++) if (L[k].z > L[j].z) j = k; return j; });
+}
+
+/* ---------- toy example (same lattice as outputs/method_figures/viterbi_trellis.pdf) ---------- */
+const KT = { A: [0, 100], B: [7, 100], C: [3, 140] };
+const TDUR = [6, 5, 7, 6];
+const TOY = [
+  [["A", 12, 2.0], ["B", 40, 1.6], ["C", 3, 1.2]],
+  [["C", 20, 1.4], ["B", 75, 1.2], ["A", 50, 1.0], ["A", 18, 1.1]],
+  [["A", 64, 1.8], ["B", 10, 1.5], ["C", 44, 1.0], ["A", 23, 0.3]],
+  [["B", 31, 3.2], ["C", 55, 1.6], ["A", 90, 0.8], ["A", 71, 0.5]],
+].map((col, i) => col.map(([f, off, z], r) => ({ f, off, dur: TDUR[i], key: KT[f][0], tempo: KT[f][1], z, cont: r >= 3 })));
+const N = TOY.length, LAST = 2 * N - 1;
+const tState = { step: LAST, sel: null, pen: { sw: 2, jump: 1, mu: 0.5 } };
+const tcol = f => `var(--${f.toLowerCase()})`;
+const tname = c => `${c.f} ${c.off}s`;
+
+function toyRender() {
+  const pen = tState.pen, res = viterbi(TOY, () => pen, 0.04), { V, B, path } = res;
+  const s = tState.step, cols = Math.min(s + 1, N), traced = s >= N ? s - N : -1;   // traced: path edges followed back so far
+  const svg = $("toy-svg"); svg.replaceChildren();
+  const X = i => 82 + i * 178, W = 100, H = 46;
+  const Y = r => (r < 3 ? 92 + r * 72 : 92 + 3 * 72 + 26);
+  const defs = el("defs", {}, svg);
+  for (const [id, col] of [["ah", "var(--ink-2)"], ["ap", "var(--ink)"], ["as", "var(--switch)"], ["aj", "var(--jump)"]]) {
+    const m = el("marker", { id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs);
+    el("path", { d: "M0,0 L10,5 L0,10 z", fill: col }, m);
+  }
+  for (let i = 0; i < N; i++) {
+    el("text", { x: X(i), y: 30, "text-anchor": "middle", "font-size": 15, "font-weight": 600 }, svg, `Scene ${i + 1}`);
+    el("text", { x: X(i), y: 47, "text-anchor": "middle", "font-size": 11.5, style: "fill:var(--muted)" }, svg, `${TDUR[i]} s`);
+  }
+  el("line", { x1: 20, x2: 690, y1: Y(3) - 36, y2: Y(3) - 36, stroke: "var(--faint)", "stroke-dasharray": "3 4" }, svg);
+  el("text", { x: 20, y: Y(3) - 42, "font-size": 10.5, style: "fill:var(--muted)" }, svg, "continuation of the previous scene's window");
+  // all possible moves, faint
+  for (let i = 1; i < N; i++) TOY[i - 1].forEach((_, a) => TOY[i].forEach((_, b) =>
+    el("line", { x1: X(i - 1) + W / 2, y1: Y(a), x2: X(i) - W / 2, y2: Y(b), stroke: "var(--faint)", "stroke-width": 0.7, opacity: 0.6 }, svg)));
+  const onPath = (i, j) => traced >= 0 && path[i] === j && i >= N - 1 - traced;
+  const full = s === LAST;
+  // best arrival arrows for computed columns
+  for (let i = 1; i < cols; i++) TOY[i].forEach((_, j) => {
+    const a = B[i][j];
+    if (full && path[i] === j && path[i - 1] === a) return;
+    el("line", { x1: X(i - 1) + W / 2, y1: Y(a), x2: X(i) - W / 2 - 3, y2: Y(j), stroke: "var(--ink-2)", "stroke-width": 1.4, opacity: 0.75, "marker-end": "url(#ah)" }, svg);
+  });
+  // traced path edges
+  const labels = [];
+  for (let i = 1; i < N; i++) {
+    if (!(onPath(i, path[i]) && onPath(i - 1, path[i - 1]))) continue;
+    const a = TOY[i - 1][path[i - 1]], b = TOY[i][path[i]], mv = move(a, b, pen, 0.04);
+    const col = mv.kind === "switch" ? "var(--switch)" : mv.kind === "jump" ? "var(--jump)" : "var(--ink)";
+    const dash = mv.kind === "switch" ? "2 4" : mv.kind === "jump" ? "8 4" : "none";
+    const x1 = X(i - 1) + W / 2, y1 = Y(path[i - 1]), x2 = X(i) - W / 2 - 3, y2 = Y(path[i]);
+    el("line", { x1, y1, x2, y2, stroke: col, "stroke-width": 3.4, "stroke-dasharray": dash, "stroke-linecap": "round",
+      "marker-end": `url(#${mv.kind === "switch" ? "as" : mv.kind === "jump" ? "aj" : "ap"})` }, svg);
+    const t = mv.kind === "jump" ? 0.4 : 0.5;
+    labels.push({ x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) - 12, lab: `${mv.kind} ${fmt(mv.cost)}`, col });
+  }
+  // nodes
+  TOY.forEach((col, i) => col.forEach((c, j) => {
+    const g = el("g", { class: "node", tabindex: 0, role: "button", "aria-label": `${tname(c)}, scene ${i + 1}, fit ${c.z}` }, svg);
+    const sel = tState.sel && tState.sel[0] === i && tState.sel[1] === j, hot = onPath(i, j);
+    el("rect", { x: X(i) - W / 2, y: Y(j) - H / 2, width: W, height: H, rx: 8, fill: c.cont ? "var(--panel)" : tcol(c.f),
+      stroke: sel ? "var(--accent)" : hot ? "var(--ink)" : tcol(c.f), "stroke-width": sel ? 3.5 : hot ? 3 : 1.4,
+      "stroke-dasharray": c.cont && !hot && !sel ? "5 3" : "none" }, g);
+    const tc = c.cont ? tcol(c.f) : "#fff";
+    el("text", { x: X(i), y: Y(j) - 3, "text-anchor": "middle", "font-size": 14, "font-weight": 600, style: `fill:${tc}` }, g, tname(c));
+    el("text", { x: X(i), y: Y(j) + 14, "text-anchor": "middle", "font-size": 11, class: "mono", style: `fill:${tc};opacity:.9` }, g, `fit ${fmt(c.z, 1)}`);
+    if (i < cols) {
+      const v = fmt(V[i][j]), pw = v.length * 7 + 12;
+      el("rect", { x: X(i) + W / 2 - pw + 10, y: Y(j) - H / 2 - 10, width: pw, height: 18, rx: 9, fill: "var(--ink)" }, g);
+      el("text", { x: X(i) + W / 2 - pw / 2 + 10, y: Y(j) - H / 2 + 3, "text-anchor": "middle", "font-size": 11.5, class: "mono", style: "fill:var(--panel)" }, g, v);
+    }
+    const pick = () => { tState.sel = [i, j]; toyRender(); };
+    g.addEventListener("click", pick);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+  }));
+  for (const L of labels) {
+    const lw = L.lab.length * 6.3 + 8;
+    el("rect", { x: L.x - lw / 2, y: L.y - 10, width: lw, height: 16, rx: 4, fill: "var(--panel)", stroke: L.col, "stroke-width": 1 }, svg);
+    el("text", { x: L.x, y: L.y + 2, "text-anchor": "middle", "font-size": 10.5, class: "mono", style: `fill:${L.col}` }, svg, L.lab);
+  }
+  el("text", { x: 20, y: 402, "font-size": 11, style: "fill:var(--muted)" }, svg, "pill = best total score of any route ending at that window · dark arrow = where that best route comes from");
+
+  // narration
+  let title, body;
+  if (s < N) {
+    const bj = V[s].indexOf(Math.max(...V[s]));
+    if (s === 0) { title = "Scene 1: nothing comes before it"; body = `Each window's best total is just its own fit. ${tname(TOY[0][bj])} leads with ${fmt(V[0][bj])}.`; }
+    else { title = `Scene ${s + 1}: best way into each window`; body = `For each window, try arriving from every window of scene ${s}: its best total, minus the cost of the move. Keep the best, add this window's fit. Click a box to see the sums.`; }
+  } else if (s === N) {
+    const j = path[N - 1];
+    title = "Pick the best ending"; body = `The highest total in the last scene is ${tname(TOY[N - 1][j])} with ${fmt(V[N - 1][j])}. That number is the score of the best complete route.`;
+  } else if (s < LAST) {
+    const i = N - 1 - (s - N);
+    title = `Follow the arrow back to scene ${i}`; body = `${tname(TOY[i][path[i]])} was reached from ${tname(TOY[i - 1][path[i - 1]])}, so that is the choice for scene ${i}.`;
+  } else {
+    const kinds = path.slice(1).map((j, i) => move(TOY[i][path[i]], TOY[i + 1][j], pen, 0.04).kind);
+    title = "The chosen soundtrack"; body = `${path.map((j, i) => tname(TOY[i][j])).join(" → ")}. Moves: ${kinds.join(", ")}.`;
+  }
+  $("t-narr").innerHTML = `<span class="eyebrow">step ${s + 1} of ${LAST + 1}</span><b>${title}</b><span>${body}</span>`;
+
+  // calculation table for the selected (or current) window
+  let sel = tState.sel;
+  if (!sel) { const i = s === LAST ? N - 1 : N - 1 - (s - N); sel = s < N ? [s, V[s].indexOf(Math.max(...V[s]))] : [i, path[i]]; }
+  const [ci, cj] = sel, c = TOY[ci][cj];
+  let html;
+  if (ci >= cols) html = `<p class="muted">Scene ${ci + 1} has not been scored yet. Press <b>Next</b>.</p>`;
+  else if (ci === 0) html = `<h3>${tname(c)} · scene 1</h3><p>No earlier scene, so best total = fit = <span class="num">${fmt(c.z)}</span>.</p>`;
+  else {
+    const rows = TOY[ci - 1].map((p, k) => { const mv = move(p, c, pen, 0.04); return { p, k, mv, tot: V[ci - 1][k] - mv.cost }; });
+    html = `<h3>Arriving at ${tname(c)} · scene ${ci + 1}</h3><table><thead><tr><th>from</th><th class="num">best total</th><th>move</th><th class="num">cost</th><th class="num">=</th></tr></thead><tbody>` +
+      rows.map(r => `<tr class="${r.k === B[ci][cj] ? "best" : ""}"><td><span class="chip" style="background:${tcol(r.p.f)}">${tname(r.p)}</span></td><td class="num">${fmt(V[ci - 1][r.k])}</td>` +
+        `<td><em class="k k-${r.mv.kind === "continue" ? "cont" : r.mv.kind}">${r.mv.kind}</em></td><td class="num">−${fmt(r.mv.cost)}</td><td class="num">${fmt(r.tot)}</td></tr>`).join("") +
+      `</tbody></table><p>Best arrival <span class="num">${fmt(V[ci][cj] - c.z)}</span> + own fit <span class="num">${fmt(c.z)}</span> = <b class="num">${fmt(V[ci][cj])}</b></p>`;
+  }
+  $("t-calc").innerHTML = `<div class="calc">${html}</div>`;
+
+  // summary vs greedy
+  const tot = (pk) => { let f = 0, m = 0, sw = 0; pk.forEach((j, i) => { f += TOY[i][j].z; if (i) { const mv = move(TOY[i - 1][pk[i - 1]], TOY[i][j], pen, 0.04); m += mv.cost; sw += mv.kind === "switch"; } }); return { f, m, sw }; };
+  const v = tot(path), g = tot(greedy(TOY, [3, 3, 3, 3]));
+  $("t-sum").innerHTML = `<span><b>Viterbi</b>: fit <span class="num">${fmt(v.f)}</span> − moves <span class="num">${fmt(v.m)}</span> = <span class="num">${fmt(v.f - v.m)}</span>, ${v.sw} song change${v.sw === 1 ? "" : "s"}</span>` +
+    `<span class="muted"><b>Best per scene</b>: fit <span class="num">${fmt(g.f)}</span> − moves <span class="num">${fmt(g.m)}</span> = <span class="num">${fmt(g.f - g.m)}</span>, ${g.sw} song changes</span>`;
+  $("t-back").disabled = s === 0; $("t-next").disabled = s === LAST;
+}
+function toyPen() {
+  tState.pen = { sw: +$("t-ls").value, jump: +$("t-lj").value, mu: +$("t-mu").value };
+  $("t-ls-o").textContent = fmt(tState.pen.sw, 1); $("t-lj-o").textContent = fmt(tState.pen.jump, 1); $("t-mu-o").textContent = fmt(tState.pen.mu, 1);
+  toyRender();
+}
+["t-ls", "t-lj", "t-mu"].forEach(id => $(id).addEventListener("input", toyPen));
+document.querySelectorAll("[data-tp]").forEach(b => b.addEventListener("click", () => {
+  const [a, j, m] = b.dataset.tp.split(",").map(Number); $("t-ls").value = a; $("t-lj").value = j; $("t-mu").value = m; toyPen();
+}));
+$("t-reset").onclick = () => { tState.step = 0; tState.sel = null; toyRender(); };
+$("t-back").onclick = () => { tState.step = Math.max(0, tState.step - 1); tState.sel = null; toyRender(); };
+$("t-next").onclick = () => { tState.step = Math.min(LAST, tState.step + 1); tState.sel = null; toyRender(); };
+$("t-end").onclick = () => { tState.step = LAST; tState.sel = null; toyRender(); };
+
+/* ---------- real video ---------- */
+const FILES = {}; DATA.files.forEach(f => FILES[f.code] = f);
+const LAYERS = DATA.layers.map(L => L.c.map(([f, off, dur, key, tempo, z], k) => ({ f, off, dur, key, tempo, z, top: k < L.n_top })));
+const NTOP = DATA.layers.map(L => L.n_top);
+const SEGS = DATA.segments, NB = SEGS.length - 1, TOTAL = DATA.case.duration_s;
+const TRUE_T = DATA.case.true_change_times_s, BT = DATA.boundary_times_s;
+const SONGC = { S1: "var(--s1)", S2: "var(--s2)", S3: "var(--s3)", S4: "var(--s4)" };
+const label = f => FILES[f].label, songCol = lab => SONGC[lab] || "var(--other)";
+const trueLab = i => ["S1", "S2", "S3", "S4"][SEGS[i].true_clip - 1];
+const logSig = z => -Math.log1p(Math.exp(-z));          // log p from a logit, stable
+const rState = { mode: "fixed" };
+
+function penFn(st) {
+  if (st.mode === "fixed") { const p = { cont: 0, sw: st.ls, jump: st.lj, mu: st.mu }; return () => p; }
+  const L = DATA.cue.logits;
+  return i => { const lp = logSig(L[i]), lq = logSig(-L[i]); return { cont: -st.al * lq, sw: -st.al * lp, jump: -st.al * lp + st.cj, mu: st.cm }; };
+}
+function decode(st) { return viterbi(LAYERS, penFn(st), DATA.tol_s).path; }
+function metrics(pk, st) {
+  const pen = penFn(st); let sw = 0, fit = 0, paid = 0, ok = 0; const times = [], mvs = [];
+  pk.forEach((j, i) => {
+    const c = LAYERS[i][j]; fit += c.z;
+    if (FILES[c.f].track_id === DATA.true_tracks[SEGS[i].true_clip - 1]) ok += SEGS[i].dur;
+    if (i) { const mv = move(LAYERS[i - 1][pk[i - 1]], c, pen(i - 1), DATA.tol_s); paid += mv.cost; mvs.push(mv); if (mv.kind === "switch") { sw++; times.push(BT[i - 1]); } }
+  });
+  const used = new Set(); let tp = 0;
+  for (const t of times) { const k = TRUE_T.findIndex((u, q) => !used.has(q) && Math.abs(u - t) <= 1); if (k >= 0) { used.add(k); tp++; } }
+  const f1 = times.length + TRUE_T.length ? 2 * tp / (times.length + TRUE_T.length) : 1;
+  return { sw, tp, f1, acc: ok / TOTAL, fit, paid, mvs, times };
+}
+const GREEDY = greedy(LAYERS, NTOP);
+
+function bands(svg, rows) {
+  svg.replaceChildren();
+  const x0 = 132, W = 1000 - x0 - 8, X = t => x0 + W * t / TOTAL, rowH = 26, gap = 14;
+  rows.forEach((row, r) => {
+    const y = 8 + r * (rowH + gap);
+    el("text", { x: x0 - 10, y: y + rowH / 2 + 4, "text-anchor": "end", class: "bandlabel" }, svg, row.name);
+    row.spans.forEach(sp => {
+      const x = X(sp.a) + 1, w = Math.max(1, X(sp.b) - X(sp.a) - 2);
+      el("rect", { x, y, width: w, height: rowH, rx: 4, fill: songCol(sp.lab) }, svg);
+      if (w > 22) el("text", { x: x + w / 2, y: y + rowH / 2 + 4, "text-anchor": "middle", "font-size": 12, "font-weight": 600, style: "fill:#fff" }, svg, sp.lab);
+    });
+    row.changes.forEach(t => {
+      const ok = TRUE_T.some(u => Math.abs(u - t) <= 1);
+      el("path", { d: `M${X(t)},${y + rowH + 2} l-4,7 h8 z`, fill: row.truth ? "var(--ink)" : ok ? "var(--good)" : "var(--bad)" }, svg);
+    });
+  });
+  const yb = 8 + rows.length * (rowH + gap) - 4;
+  for (let t = 0; t <= TOTAL; t += 10) el("text", { x: X(t), y: yb + 6, "text-anchor": "middle", "font-size": 10.5, class: "mono", style: "fill:var(--muted)" }, svg, `${t}s`);
+  svg.setAttribute("viewBox", `0 0 1000 ${yb + 12}`);
+}
+function spansOf(pk) {   // merge consecutive segments playing the same song file
+  const out = [], ch = [];
+  pk.forEach((j, i) => {
+    const f = LAYERS[i][j].f, a = SEGS[i].a, b = SEGS[i].b;
+    if (out.length && out[out.length - 1].f === f) out[out.length - 1].b = b;
+    else { if (out.length) ch.push(a); out.push({ f, lab: label(f), a, b }); }
+  });
+  return { spans: out, changes: ch };
+}
+const TRUTH_ROW = { name: "True music", truth: true, changes: TRUE_T,
+  spans: DATA.case.clips.map((c, k) => ({ lab: `S${k + 1}`, a: c.start_s, b: c.end_s })) };
+
+function heroRender() {
+  const st = { mode: "fixed", ls: DATA.fixed.lam_switch, lj: DATA.fixed.lam_jump, mu: DATA.fixed.mu };
+  const v = decode(st), g = spansOf(GREEDY), vv = spansOf(v);
+  bands($("hero-bands"), [TRUTH_ROW, { name: "Best per scene", ...g }, { name: "Viterbi", ...vv }]);
+  $("hero-g").textContent = g.changes.length; $("hero-v").textContent = vv.changes.length;
+}
+
+function realState() {
+  return rState.mode === "fixed" ? { mode: "fixed", ls: +$("r-ls").value, lj: +$("r-lj").value, mu: +$("r-mu").value }
+    : { mode: "cue", al: +$("r-al").value, cj: +$("r-cj").value, cm: +$("r-cm").value };
+}
+function realRender() {
+  const st = realState();
+  for (const id of ["r-ls", "r-lj", "r-mu", "r-al", "r-cj", "r-cm"]) $(id + "-o").textContent = fmt(+$(id).value);
+  const pk = decode(st), m = metrics(pk, st), g = metrics(GREEDY, st);
+  // stats
+  const stat = (v, l, d) => `<div class="stat"><span class="v">${v}</span><span class="l">${l}</span>${d ? `<span class="d muted">${d}</span>` : ""}</div>`;
+  $("r-stats").innerHTML =
+    stat(m.sw, "song changes", `truth 3 · best per scene ${g.sw}`) +
+    stat(`${m.tp}/3`, "true changes caught (±1 s)", `${m.sw - m.tp} at the wrong place`) +
+    stat(fmt(m.f1), "change F1", `best per scene ${fmt(g.f1)}`) +
+    stat(`${Math.round(100 * m.acc)}%`, "time the true song plays", `best per scene ${Math.round(100 * g.acc)}%`) +
+    stat(fmt(m.fit - m.paid), "route score", `fit ${fmt(m.fit)} − moves ${fmt(m.paid)}`);
+  bands($("real-bands"), [TRUTH_ROW, { name: "This setting", ...spansOf(pk) }]);
+  chartRender(pk, st);
+  sweepRender(st);
+  tableRender(pk, m, st);
+  const saved = st.mode === "fixed" ? DATA.saved_picks.viterbi_fixed : DATA.saved_picks.final;
+  const same = pk.every((j, i) => j === saved[i]);
+  const isStart = st.mode === "fixed" ? (st.ls === DATA.fixed.lam_switch && st.lj === DATA.fixed.lam_jump && st.mu === DATA.fixed.mu)
+    : (st.al === DATA.cue.alpha && st.cj === DATA.cue.lam_jump && st.cm === DATA.cue.mu);
+  $("r-mode-note").innerHTML = (st.mode === "fixed"
+    ? "One price for every boundary: continue 0, jump λ<sub>jump</sub>, switch λ<sub>switch</sub> + μ·(Δkey + Δtempo)."
+    : "Each boundary gets its own price from the change predictor's probability p (orange bars under the chart): continue −α·log(1−p), switch −α·log p + μ·(Δkey + Δtempo), jump −α·log p + λ<sub>jump</sub>.") +
+    (isStart ? (same ? " <b>These are the system's tuned settings; the route matches its saved output exactly.</b>" : " <b>Mismatch with the saved output.</b>") : "");
+}
+function chartRender(pk, st) {
+  const svg = $("real-chart"); svg.replaceChildren();
+  const x0 = 56, x1 = 992, n = SEGS.length, cw = (x1 - x0) / n, CX = i => x0 + cw * (i + 0.5);
+  const thumbH = cw * 0.5625 - 4, yTop = 22 + thumbH + 12, yBot = st.mode === "cue" ? 392 : 410;
+  const zs = LAYERS.flat().map(c => c.z), zmin = Math.floor(Math.min(...zs) * 2) / 2, zmax = Math.ceil(Math.max(...zs) * 2) / 2;
+  const Y = z => yBot - (yBot - yTop) * (z - zmin) / (zmax - zmin);
+  for (let i = 0; i < n; i++) {
+    el("text", { x: CX(i), y: 14, "text-anchor": "middle", "font-size": 11.5, "font-weight": 600 }, svg, `${i + 1}`);
+    el("image", { href: `data:image/jpeg;base64,${DATA.thumbs_jpg_b64[i]}`, x: x0 + cw * i + 2, y: 20, width: cw - 4, height: thumbH, preserveAspectRatio: "xMidYMid slice" }, svg);
+    el("rect", { x: x0 + cw * i + 2, y: 20 + thumbH - 14, width: 30, height: 14, fill: songCol(trueLab(i)) }, svg);
+    el("text", { x: x0 + cw * i + 17, y: 20 + thumbH - 3.5, "text-anchor": "middle", "font-size": 10, "font-weight": 600, style: "fill:#fff" }, svg, trueLab(i));
+    el("text", { x: CX(i), y: yBot + 18, "text-anchor": "middle", "font-size": 10.5, class: "mono", style: "fill:var(--muted)" }, svg, `${SEGS[i].a.toFixed(1)}–${SEGS[i].b.toFixed(1)}s`);
+  }
+  for (let z = Math.ceil(zmin); z <= zmax; z++) {
+    el("line", { x1: x0, x2: x1, y1: Y(z), y2: Y(z), stroke: "var(--line)", "stroke-width": 1 }, svg);
+    el("text", { x: x0 - 8, y: Y(z) + 4, "text-anchor": "end", "font-size": 11, class: "mono", style: "fill:var(--muted)" }, svg, z);
+  }
+  el("text", { x: 14, y: (yTop + yBot) / 2, transform: `rotate(-90 14 ${(yTop + yBot) / 2})`, "text-anchor": "middle", "font-size": 11.5, style: "fill:var(--ink-2)" }, svg, "fit to the scene (z) →");
+  for (let i = 0; i < NB; i++) {
+    const x = x0 + cw * (i + 1), tru = TRUE_T.some(u => Math.abs(u - BT[i]) < 0.05);
+    el("line", { x1: x, x2: x, y1: yTop - 4, y2: yBot, stroke: tru ? "var(--ink)" : "var(--line)", "stroke-width": tru ? 1.5 : 1, "stroke-dasharray": tru ? "5 3" : "none" }, svg);
+    if (tru) el("text", { x, y: yTop - 7, "text-anchor": "middle", "font-size": 9.5, style: "fill:var(--ink-2)" }, svg, "true change");
+    if (st.mode === "cue") {
+      const p = DATA.cue.p[i], h = 30 * p;
+      el("rect", { x: x - 7, y: yBot + 52 - h, width: 14, height: h, fill: "var(--jump)", rx: 2 }, svg);
+      el("text", { x, y: yBot + 64, "text-anchor": "middle", "font-size": 10, class: "mono", style: "fill:var(--ink-2)" }, svg, `p ${p.toFixed(2)}`);
+    }
+  }
+  if (st.mode === "cue") el("text", { x: x0 - 8, y: yBot + 44, "text-anchor": "end", "font-size": 10, style: "fill:var(--muted)" }, svg, "change p");
+  // dots: deterministic spread inside the column
+  const pos = LAYERS.map((L, i) => L.map((c, k) => ({ x: CX(i) + cw * 0.36 * (((k * 0.618034) % 1) * 2 - 1), y: Y(c.z) })));
+  LAYERS.forEach((L, i) => L.forEach((c, k) => {
+    if (pk[i] === k) return;
+    const lab = label(c.f), col = songCol(lab), d = el("circle", { cx: pos[i][k].x, cy: pos[i][k].y, r: lab.startsWith("S") ? 4.6 : 3.6,
+      fill: c.top ? col : "var(--panel)", stroke: col, "stroke-width": 1.4, opacity: lab.startsWith("S") ? 0.95 : 0.75 }, svg);
+    el("title", {}, d, `${lab} · ${FILES[c.f].music_id} · ${c.off.toFixed(1)} s · fit ${c.z.toFixed(2)}${c.top ? "" : " · continuation"}`);
+  }));
+  const pen = penFn(st);
+  for (let i = 1; i < n; i++) {
+    const a = pos[i - 1][pk[i - 1]], b = pos[i][pk[i]], mv = move(LAYERS[i - 1][pk[i - 1]], LAYERS[i][pk[i]], pen(i - 1), DATA.tol_s);
+    const col = mv.kind === "switch" ? "var(--switch)" : mv.kind === "jump" ? "var(--jump)" : "var(--ink)";
+    el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: col, "stroke-width": 3, "stroke-linecap": "round", "stroke-dasharray": mv.kind === "switch" ? "2 5" : mv.kind === "jump" ? "8 4" : "none" }, svg);
+  }
+  pk.forEach((k, i) => {
+    const c = LAYERS[i][k], lab = label(c.f), p = pos[i][k];
+    const g = el("g", {}, svg);
+    el("circle", { cx: p.x, cy: p.y, r: 9, fill: songCol(lab), stroke: "var(--ink)", "stroke-width": 2.2 }, g);
+    el("text", { x: p.x, y: p.y + 3.5, "text-anchor": "middle", "font-size": lab.length > 1 ? 8.5 : 10, "font-weight": 700, style: "fill:#fff" }, g, lab);
+    el("title", {}, g, `chosen: ${lab} · ${FILES[c.f].music_id} · ${c.off.toFixed(1)} s · fit ${c.z.toFixed(2)}`);
+  });
+  // legend
+  const ly = 462, items = [["var(--s1)", "S1 true song 1"], ["var(--s2)", "S2 true song 2"], ["var(--other)", "other songs"]];
+  let lx = x0;
+  items.forEach(([c, t]) => { el("circle", { cx: lx + 5, cy: ly - 4, r: 5, fill: c }, svg); el("text", { x: lx + 15, y: ly, "font-size": 11 }, svg, t); lx += t.length * 6.2 + 34; });
+  el("circle", { cx: lx + 5, cy: ly - 4, r: 4.5, fill: "var(--panel)", stroke: "var(--other)", "stroke-width": 1.4 }, svg); el("text", { x: lx + 15, y: ly, "font-size": 11 }, svg, "continuation window"); lx += 150;
+  [["var(--ink)", "none", "continue"], ["var(--jump)", "8 4", "jump"], ["var(--switch)", "2 5", "switch"]].forEach(([c, d, t]) => {
+    el("line", { x1: lx, x2: lx + 26, y1: ly - 4, y2: ly - 4, stroke: c, "stroke-width": 3, "stroke-dasharray": d, "stroke-linecap": "round" }, svg);
+    el("text", { x: lx + 32, y: ly, "font-size": 11 }, svg, t); lx += t.length * 6.2 + 52;
+  });
+}
+function sweepRender(st) {
+  const fixed = st.mode === "fixed", xs = [], sws = [], f1s = [];
+  const xmax = fixed ? 6 : 4;
+  for (let v = 0; v <= xmax + 1e-9; v += 0.05) {
+    const s2 = fixed ? { ...st, ls: v } : { ...st, al: v }, m = metrics(decode(s2), s2);
+    xs.push(v); sws.push(m.sw); f1s.push(m.f1);
+  }
+  const cur = fixed ? st.ls : st.al, xl = fixed ? "switch penalty λ_switch" : "trust in the predictor α";
+  $("r-sweeps").innerHTML = "";
+  const chart = (title, ys, ymax, ticks, ref, refLab) => {
+    const svg = el("svg", { viewBox: "0 0 460 200", role: "img", "aria-label": title }, $("r-sweeps"));
+    const x0 = 40, x1 = 450, y0 = 160, y1 = 28, X = v => x0 + (x1 - x0) * v / xmax, Y = v => y0 - (y0 - y1) * v / ymax;
+    el("text", { x: x0, y: 14, "font-size": 13, "font-weight": 600 }, svg, title);
+    ticks.forEach(t => { el("line", { x1: x0, x2: x1, y1: Y(t), y2: Y(t), stroke: "var(--line)" }, svg); el("text", { x: x0 - 6, y: Y(t) + 4, "text-anchor": "end", "font-size": 10.5, class: "mono", style: "fill:var(--muted)" }, svg, t); });
+    for (let v = 0; v <= xmax; v++) el("text", { x: X(v), y: y0 + 16, "text-anchor": "middle", "font-size": 10.5, class: "mono", style: "fill:var(--muted)" }, svg, v);
+    el("text", { x: (x0 + x1) / 2, y: y0 + 34, "text-anchor": "middle", "font-size": 11, style: "fill:var(--ink-2)" }, svg, xl);
+    if (ref !== null) { el("line", { x1: x0, x2: x1, y1: Y(ref), y2: Y(ref), stroke: "var(--ink-2)", "stroke-dasharray": "4 3" }, svg); el("text", { x: x1, y: Y(ref) - 5, "text-anchor": "end", "font-size": 10.5, style: "fill:var(--ink-2)" }, svg, refLab); }
+    let d = ""; xs.forEach((v, k) => { d += `${k ? "L" : "M"}${X(v).toFixed(1)},${Y(ys[k]).toFixed(1)}` + (k < xs.length - 1 ? `H${X(xs[k + 1]).toFixed(1)}` : ""); });
+    el("path", { d, fill: "none", stroke: "var(--accent)", "stroke-width": 2.2 }, svg);
+    const k = Math.min(xs.length - 1, Math.round(cur / 0.05));
+    el("line", { x1: X(cur), x2: X(cur), y1: y1, y2: y0, stroke: "var(--ink)", "stroke-width": 1 }, svg);
+    el("circle", { cx: X(cur), cy: Y(ys[k]), r: 5, fill: "var(--ink)" }, svg);
+    el("text", { x: X(cur) + 8, y: y1 + 10, "font-size": 11, class: "mono" }, svg, `now ${ys[k] % 1 ? fmt(ys[k]) : ys[k]}`);
+  };
+  chart("Song changes in the video", sws, 10, [0, 3, 6, 9], 3, "true changes: 3");
+  chart("Change F1 (±1 s)", f1s, 1, [0, 0.5, 1], null, "");
+}
+function tableRender(pk, m, st) {
+  const cue = st.mode === "cue", pen = penFn(st);
+  let h = `<thead><tr><th>boundary</th><th>time</th><th>true change?</th>${cue ? "<th>p</th>" : ""}<th>move chosen</th><th>song before → after</th><th class="num">cost paid</th><th class="num">continue would cost</th><th class="num">switch would cost</th></tr></thead><tbody>`;
+  for (let i = 0; i < NB; i++) {
+    const a = LAYERS[i][pk[i]], b = LAYERS[i + 1][pk[i + 1]], mv = m.mvs[i], p = pen(i), tru = TRUE_T.some(u => Math.abs(u - BT[i]) < 0.05);
+    const changed = mv.kind === "switch", right = changed === tru;
+    h += `<tr><td>${i + 1}</td><td class="num">${BT[i].toFixed(2)} s</td><td>${tru ? "<b>yes</b>" : "no"}</td>${cue ? `<td class="num">${DATA.cue.p[i].toFixed(2)}</td>` : ""}` +
+      `<td><em class="k k-${mv.kind === "continue" ? "cont" : mv.kind}">${mv.kind}</em> <span style="color:var(--${right ? "good" : "bad"})">${right ? "✓" : "✗"}</span></td>` +
+      `<td><span class="chip" style="background:${songCol(label(a.f))}">${label(a.f)} ${a.off.toFixed(1)}s</span> → <span class="chip" style="background:${songCol(label(b.f))}">${label(b.f)} ${b.off.toFixed(1)}s</span></td>` +
+      `<td class="num">${fmt(mv.cost)}</td><td class="num">${fmt(p.cont)}</td><td class="num">${fmt(p.sw)}${p.mu ? " + μΔ" : ""}</td></tr>`;
+  }
+  $("r-table").innerHTML = h + `</tbody><caption style="caption-side:bottom;text-align:left;padding-top:8px;font-size:.85rem;color:var(--muted)">✓ = the soundtrack changes song exactly where the film does, or holds where it does not. A jump stays in the same song, so it counts as holding.</caption>`;
+}
+
+const PRESETS = {
+  fixed: [["No penalty", { "r-ls": 0, "r-lj": 0, "r-mu": 0 }], ["Tuned (this fold)", { "r-ls": DATA.fixed.lam_switch, "r-lj": DATA.fixed.lam_jump, "r-mu": DATA.fixed.mu }],
+    ["High penalty", { "r-ls": 4, "r-lj": 1, "r-mu": 0.5 }]],
+  cue: [["Tuned (final system)", { "r-al": DATA.cue.alpha, "r-cj": DATA.cue.lam_jump, "r-cm": DATA.cue.mu }], ["Ignore predictor", { "r-al": 0, "r-cj": 0, "r-cm": 0 }],
+    ["Trust it strongly", { "r-al": 3, "r-cj": DATA.cue.lam_jump, "r-cm": 0 }]],
+};
+function presetsRender() {
+  const box = $("r-presets"); box.replaceChildren();
+  PRESETS[rState.mode].forEach(([name, vals]) => {
+    const b = document.createElement("button"); b.textContent = name;
+    b.onclick = () => { for (const id in vals) $(id).value = vals[id]; realRender(); };
+    box.appendChild(b);
+  });
+}
+function setMode(m) {
+  rState.mode = m; $("m-fixed").setAttribute("aria-pressed", m === "fixed"); $("m-cue").setAttribute("aria-pressed", m === "cue");
+  $("r-fixed-ctl").hidden = m !== "fixed"; $("r-cue-ctl").hidden = m !== "cue"; presetsRender(); realRender();
+}
+$("m-fixed").onclick = () => setMode("fixed"); $("m-cue").onclick = () => setMode("cue");
+["r-ls", "r-lj", "r-mu", "r-al", "r-cj", "r-cm"].forEach(id => $(id).addEventListener("input", realRender));
+
+/* start values = the system's tuned settings */
+$("r-ls").value = DATA.fixed.lam_switch; $("r-lj").value = DATA.fixed.lam_jump; $("r-mu").value = DATA.fixed.mu;
+$("r-al").value = DATA.cue.alpha; $("r-cj").value = DATA.cue.lam_jump; $("r-cm").value = DATA.cue.mu;
+const nRoutes = LAYERS.reduce((a, L) => a * L.length, 1), nOps = LAYERS.slice(1).reduce((a, L, i) => a + L.length * LAYERS[i].length, 0);
+$("n-routes").innerHTML = `about ${nRoutes.toExponential(1).replace(/e\+?(\d+)/, " × 10<sup>$1</sup>")}`;
+$("n-ops").textContent = nOps.toLocaleString("en-US");
+heroRender(); toyPen(); setMode("fixed");
+</script>
