@@ -195,6 +195,5 @@ Pass `--config configs/best_semantic.yaml` to every command.
 
 | What | Path |
 |---|---|
-| Music library: features, manifests, prepared music | `cleaned_dataset/` |
 | Trained runs: heads, `fusion.json`, `stitch.json`, cue models | `runs/cleaned/semantic/`, `runs/cleaned/pipeline_ens10/`, `runs/cleaned/cue/` |
 | ImageBind weights | `.checkpoints/imagebind_huge.pth` (from `tools/setup_external.sh`) |
