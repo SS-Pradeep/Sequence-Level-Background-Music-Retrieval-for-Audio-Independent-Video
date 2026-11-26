@@ -1,0 +1,56 @@
+======================================================================================================================
+END-TO-END EXAMPLE  youtube2 104 #0001
+======================================================================================================================
+Video                         combined_full_bgm_dataset_youtube2__104__104_bgm_0001.mp4  (46.40 s, silent 25 fps interim)
+Picked as                     war / action (soldiers in desert dunes, tank)
+Test fold                     4  (the models used are fold 4's; they are trained on fold 4's train split only)
+Film                          full_bgm_dataset_youtube2:104  (3 pairs in the dataset)
+Film in this fold's           train: 0 pairs of 146 films   val: 0 pairs of 16 films   test: 3 pairs of 49 films
+Own music track               trk_0327  (pairs with this track in train + val: 0)
+Held-out check                [OK] film and music are not in this fold's training or validation set
+Models                        runs/cleaned/pipeline_ens10/fold4/seed0: ensemble of seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Music library                 1011 files (whole library); shortlist 29 files; 305 windows scored for scene 0
+Original music (truth)        combined_full_bgm_dataset_youtube2__104__104_bgm_0001  (46.4 s)
+----------------------------------------------------------------------------------------------------------------------
+SCENES AND CHOSEN MUSIC  (window = seconds inside the music file, as retrieved)
+----------------------------------------------------------------------------------------------------------------------
+scene  start (s)  end (s)  length (s)  chosen music file       window  file's split  original track  original segment  true file rank  true window rank
+-----  ---------  -------  ----------  -----------------  -----------  ------------  --------------  ----------------  --------------  ----------------
+    0       0.00    10.38       10.38  sunnxt 94 #0002     1.0-11.4 s         train              no                no             429   not shortlisted
+    1      10.38    20.76       10.38  youtube 11 #0005    6.0-16.4 s         train              no                no             272   not shortlisted
+    2      20.76    23.96        3.20  sunnxt 183 #0002     0.0-3.2 s         train              no                no             333   not shortlisted
+    3      23.96    27.76        3.80  sunnxt 183 #0002     3.2-7.0 s         train              no                no             339   not shortlisted
+    4      27.76    44.04       16.28  youtube2 72 #0002   0.0-16.3 s         train              no                no             216   not shortlisted
+    5      44.04    46.40        2.36  sunnxt 423 #0001   31.5-33.9 s         train              no                no             199   not shortlisted
+File's split: where the chosen file's own video sits in fold 4 (test = unseen music; train = music seen in training).
+Original segment: the original file, starting within 0.5 s of where it plays in the film.
+True file rank: the original music among the 1011 library files (coarse stage). True window rank: among all fine windows; tied windows share a rank.
+----------------------------------------------------------------------------------------------------------------------
+STITCHING AND GROUND TRUTH
+----------------------------------------------------------------------------------------------------------------------
+Scenes                        6
+Music files used              5
+Switches (to another file)    4  (5.2 per minute)
+Jumps (inside a file)         0
+Original track chosen         0 of 6 scenes  (0.0 of 46.4 s)
+Original segment chosen       0 of 6 scenes  (0.0 of 46.4 s)
+Chosen files by split         train 5
+----------------------------------------------------------------------------------------------------------------------
+RENDERED PIECES  (after beat snap; a piece = one continuous stretch of one file)
+----------------------------------------------------------------------------------------------------------------------
+piece  video start  video end  length (s)  music file              window
+-----  -----------  ---------  ----------  -----------------  -----------
+    0         0.00      10.38       10.38  sunnxt 94 #0002     1.1-11.5 s
+    1        10.38      20.76       10.38  youtube 11 #0005    7.9-18.3 s
+    2        20.76      27.76        7.00  sunnxt 183 #0002     0.1-7.1 s
+    3        27.76      37.12        9.36  youtube2 72 #0002    0.0-9.4 s
+    4        37.12      44.04        6.92  youtube2 72 #0002    0.2-7.2 s
+    5        44.04      46.40        2.36  sunnxt 423 #0001   31.3-33.7 s
+1 extra piece(s): a stretch longer than what is left of its music file loops back at a beat.
+----------------------------------------------------------------------------------------------------------------------
+OUTPUT
+----------------------------------------------------------------------------------------------------------------------
+File                          demo_outputs_cleaned/08_video_youtube2_104_0001/output_with_bgm.mp4  (3.81 MB)
+Duration check                soundtrack 46.400 s  vs  video 46.400 s  ->  difference +0.0 ms  [OK]
+Time                          plan 0.4 s (retrieve + Viterbi, CPU), render 1.1 s; loading the fold's models and library index 0.0 s
+======================================================================================================================
