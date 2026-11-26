@@ -1,0 +1,546 @@
+{
+ "pair_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+ "fold": 2,
+ "run": "runs/cleaned/pipeline_ens10/fold2/seed0",
+ "held_out": {
+  "film": "full_bgm_dataset_youtube:14",
+  "track": "trk_0549",
+  "in_test": true,
+  "film_pairs": 7,
+  "train_film_pairs": 0,
+  "val_film_pairs": 0,
+  "test_film_pairs": 7,
+  "train_films": 158,
+  "val_films": 16,
+  "test_films": 37,
+  "train_track_pairs": 0,
+  "ok": true
+ },
+ "scenes": [
+  {
+   "scene": 0,
+   "start_s": 0.0,
+   "end_s": 5.0,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 0.0,
+   "file_rank": 229,
+   "n_files": 1011,
+   "true_z": 0.6782159446852637,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube2__10__10_bgm_0001",
+     3.2685767277133584
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0002",
+     2.950093087632735
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.9054264876132145
+    ],
+    [
+     "sunnxt_383_383_bgm_0000",
+     2.8425754763201367
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.7812626572171553
+    ]
+   ],
+   "coarse_margin": 0.31848364008062324,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 522,
+   "window_rank": null,
+   "fine_top_id": "sunnxt_383_383_bgm_0000",
+   "fine_top_start_s": 9.52,
+   "fine_margin": 0.2781292796909991,
+   "chosen_id": "sunnxt_383_383_bgm_0000",
+   "chosen_off_s": 9.52,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 1,
+   "start_s": 5.0,
+   "end_s": 9.16,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 5.0,
+   "file_rank": 212,
+   "n_files": 1011,
+   "true_z": 0.9108060544619929,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.5864649834271756
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.4742689192189418
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__344__344_bgm_0000",
+     2.461916289336414
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.293444540149316
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__70__70_bgm_0000",
+     2.2203876871671686
+    ]
+   ],
+   "coarse_margin": 0.1121960642082338,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 576,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube2__344__344_bgm_0000",
+   "fine_top_start_s": 1.0,
+   "fine_margin": 0.016739316586815045,
+   "chosen_id": "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+   "chosen_off_s": 0.0,
+   "chosen_split": "val",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 2,
+   "start_s": 9.16,
+   "end_s": 12.24,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 9.16,
+   "file_rank": 116,
+   "n_files": 1011,
+   "true_z": 1.2907395910759982,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.5336834351811373
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.447970625917539
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.3803862678853713
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__344__344_bgm_0000",
+     2.304036109530595
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__60__60_bgm_0001",
+     2.1701794874694644
+    ]
+   ],
+   "coarse_margin": 0.08571280926359837,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 632,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+   "fine_top_start_s": 1.5,
+   "fine_margin": 0.1842295087111463,
+   "chosen_id": "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+   "chosen_off_s": 4.16,
+   "chosen_split": "val",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 3,
+   "start_s": 12.24,
+   "end_s": 14.92,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 12.24,
+   "file_rank": 88,
+   "n_files": 1011,
+   "true_z": 1.427864680691111,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube2__302__302_bgm_0000",
+     2.484160944512232
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.4541039016198827
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__23__23_bgm_0001",
+     2.4477880295502272
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__132__132_bgm_0002",
+     2.4117979910407614
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.3864230126275965
+    ]
+   ],
+   "coarse_margin": 0.03005704289234945,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 659,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube2__302__302_bgm_0000",
+   "fine_top_start_s": 8.0,
+   "fine_margin": 0.22285140332073827,
+   "chosen_id": "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+   "chosen_off_s": 7.24,
+   "chosen_split": "val",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 4,
+   "start_s": 14.92,
+   "end_s": 20.08,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 14.92,
+   "file_rank": 118,
+   "n_files": 1011,
+   "true_z": 1.2181824427239865,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.563557696743946
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.4900200980644747
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.4327197764002695
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__339__339_bgm_0000",
+     2.424162010805084
+    ],
+    [
+     "sunnxt_326_326_bgm_0002",
+     2.4216691276380278
+    ]
+   ],
+   "coarse_margin": 0.0735375986794713,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 520,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube__70__70_bgm_0000",
+   "fine_top_start_s": 4.724875000000001,
+   "fine_margin": 0.06213509394101946,
+   "chosen_id": "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+   "chosen_off_s": 9.92,
+   "chosen_split": "val",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 5,
+   "start_s": 20.08,
+   "end_s": 22.52,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 20.08,
+   "file_rank": 286,
+   "n_files": 1011,
+   "true_z": 0.6042821157511697,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+     2.725836940152163
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__23__23_bgm_0001",
+     2.646254632481261
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__132__132_bgm_0002",
+     2.6376139355612587
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__11__11_bgm_0003",
+     2.6221924969015227
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.528551457034735
+    ]
+   ],
+   "coarse_margin": 0.07958230767090191,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 676,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "fine_top_start_s": 22.0,
+   "fine_margin": 0.18243955255259903,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "chosen_off_s": 16.0,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 6,
+   "start_s": 22.52,
+   "end_s": 25.0,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 22.52,
+   "file_rank": 431,
+   "n_files": 1011,
+   "true_z": 0.16207039153845273,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__132__132_bgm_0002",
+     2.6760354969034577
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__11__11_bgm_0003",
+     2.6426759033001614
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+     2.586420644726119
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.561177414312451
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__23__23_bgm_0001",
+     2.501899495227643
+    ]
+   ],
+   "coarse_margin": 0.03335959360329621,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 672,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "fine_top_start_s": 22.0,
+   "fine_margin": 0.3117766487723199,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "chosen_off_s": 18.44,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 7,
+   "start_s": 25.0,
+   "end_s": 30.96,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 25.0,
+   "file_rank": 221,
+   "n_files": 1011,
+   "true_z": 0.8561503953976415,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.6676108653317425
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.6200868083822204
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.5961370505858503
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+     2.5441292536507825
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__132__132_bgm_0002",
+     2.511245073757218
+    ]
+   ],
+   "coarse_margin": 0.04752405694952211,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 480,
+   "window_rank": null,
+   "fine_top_id": "sunnxt_383_383_bgm_0000",
+   "fine_top_start_s": 8.559999999999999,
+   "fine_margin": 0.0533658446077665,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "chosen_off_s": 20.92,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 8,
+   "start_s": 30.96,
+   "end_s": 37.76,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 30.96,
+   "file_rank": 191,
+   "n_files": 1011,
+   "true_z": 0.9600067934356359,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+     2.510558277580875
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.420440901534929
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.324623591796196
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__132__132_bgm_0002",
+     2.277070018553416
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__72__72_bgm_0000",
+     2.261599955979742
+    ]
+   ],
+   "coarse_margin": 0.09011737604594572,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 432,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+   "fine_top_start_s": 0.0,
+   "fine_margin": 0.08318655736431513,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+   "chosen_off_s": 1.0,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 9,
+   "start_s": 37.76,
+   "end_s": 40.88,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 37.76,
+   "file_rank": 64,
+   "n_files": 1011,
+   "true_z": 1.6884565766843076,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube__70__70_bgm_0000",
+     2.51200544583776
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__146__146_bgm_0004",
+     2.380874981682148
+    ],
+    [
+     "sunnxt_280_280_bgm_0000",
+     2.37472711431012
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.367213830275636
+    ],
+    [
+     "combined_full_bgm_dataset_youtube__23__23_bgm_0001",
+     2.3625532510033374
+    ]
+   ],
+   "coarse_margin": 0.13113046415561191,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 632,
+   "window_rank": null,
+   "fine_top_id": "combined_full_bgm_dataset_youtube__70__70_bgm_0000",
+   "fine_top_start_s": 4.5,
+   "fine_margin": 0.32738449044507667,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+   "chosen_off_s": 7.799999999999997,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 10,
+   "start_s": 40.88,
+   "end_s": 44.0,
+   "true_id": "combined_full_bgm_dataset_youtube__14__14_bgm_0002",
+   "true_off_s": 40.88,
+   "file_rank": 131,
+   "n_files": 1011,
+   "true_z": 1.2012084656101236,
+   "top_files": [
+    [
+     "combined_full_bgm_dataset_youtube2__10__10_bgm_0001",
+     2.8204173861810653
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+     2.5899150210235433
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+     2.5892368127522047
+    ],
+    [
+     "sunnxt_321_321_bgm_0000",
+     2.5585771152693333
+    ],
+    [
+     "sunnxt_383_383_bgm_0000",
+     2.5399904684416974
+    ]
+   ],
+   "coarse_margin": 0.23050236515752198,
+   "shortlisted": false,
+   "n_short": 28,
+   "n_windows": 632,
+   "window_rank": null,
+   "fine_top_id": "sunnxt_383_383_bgm_0000",
+   "fine_top_start_s": 11.400000000000002,
+   "fine_margin": 0.1416790692613401,
+   "chosen_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+   "chosen_off_s": 10.920000000000002,
+   "chosen_split": "test",
+   "chosen_track": false,
+   "chosen_window": false
+  }
+ ],
+ "pieces": [
+  {
+   "music_id": "sunnxt_383_383_bgm_0000",
+   "offset": 9.148662567138672,
+   "start": 0.0,
+   "end": 5.0,
+   "tempo": 117.4538345336914
+  },
+  {
+   "music_id": "combined_full_bgm_dataset_youtube__109__109_bgm_0003",
+   "offset": 0.06965986639261246,
+   "start": 5.0,
+   "end": 20.08,
+   "tempo": 112.3471450805664
+  },
+  {
+   "music_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0001",
+   "offset": 16.068208694458008,
+   "start": 20.08,
+   "end": 30.96,
+   "tempo": 123.046875
+  },
+  {
+   "music_id": "combined_full_bgm_dataset_youtube2__289__289_bgm_0002",
+   "offset": 1.0,
+   "start": 30.96,
+   "end": 44.0,
+   "tempo": 117.4538345336914
+  }
+ ]
+}
