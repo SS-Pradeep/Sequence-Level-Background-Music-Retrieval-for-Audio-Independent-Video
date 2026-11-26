@@ -1,0 +1,404 @@
+{
+ "pair_id": "sunnxt_526_526_bgm_0000",
+ "fold": 4,
+ "run": "runs/cleaned/pipeline_ens10/fold4/seed0",
+ "held_out": {
+  "film": "sunnxt:526",
+  "track": "trk_1053",
+  "in_test": true,
+  "film_pairs": 3,
+  "train_film_pairs": 0,
+  "val_film_pairs": 0,
+  "test_film_pairs": 3,
+  "train_films": 146,
+  "val_films": 16,
+  "test_films": 49,
+  "train_track_pairs": 0,
+  "ok": true
+ },
+ "scenes": [
+  {
+   "scene": 0,
+   "start_s": 0.0,
+   "end_s": 6.08,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 0.0,
+   "file_rank": 8,
+   "n_files": 1011,
+   "true_z": 2.687749524974639,
+   "top_files": [
+    [
+     "sunnxt_545_545_bgm_0003",
+     3.608827711371768
+    ],
+    [
+     "sunnxt_545_545_bgm_0002",
+     3.5302351346409777
+    ],
+    [
+     "sunnxt_545_545_bgm_0000",
+     3.248935294502569
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__341__341_bgm_0003",
+     3.01750665419204
+    ],
+    [
+     "sunnxt_117_117_bgm_0002",
+     2.9941170339078815
+    ]
+   ],
+   "coarse_margin": 0.07859257673079023,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 973,
+   "window_rank": 972,
+   "fine_top_id": "sunnxt_545_545_bgm_0002",
+   "fine_top_start_s": 38.0,
+   "fine_margin": 0.9857845024446739,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 33.5,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 1,
+   "start_s": 6.08,
+   "end_s": 8.56,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 6.08,
+   "file_rank": 9,
+   "n_files": 1011,
+   "true_z": 2.732359989391438,
+   "top_files": [
+    [
+     "sunnxt_331_331_bgm_0000",
+     2.9435400239581475
+    ],
+    [
+     "sunnxt_298_298_bgm_0002",
+     2.895815889932616
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     2.8764054095098
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__341__341_bgm_0003",
+     2.8454208231434097
+    ],
+    [
+     "sunnxt_356_356_bgm_0000",
+     2.834154603083088
+    ]
+   ],
+   "coarse_margin": 0.04772413402553166,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1170,
+   "window_rank": 1050,
+   "fine_top_id": "sunnxt_545_545_bgm_0002",
+   "fine_top_start_s": 39.0,
+   "fine_margin": 0.6112961878178091,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 39.58,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 2,
+   "start_s": 8.56,
+   "end_s": 10.68,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 8.56,
+   "file_rank": 8,
+   "n_files": 1011,
+   "true_z": 2.4771238690846094,
+   "top_files": [
+    [
+     "sunnxt_298_298_bgm_0002",
+     3.130787657279221
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     2.7014956800648284
+    ],
+    [
+     "sunnxt_298_298_bgm_0000",
+     2.646372212502235
+    ],
+    [
+     "sunnxt_533_533_bgm_0001",
+     2.6334859544580387
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__341__341_bgm_0003",
+     2.621272467877292
+    ]
+   ],
+   "coarse_margin": 0.4292919772143926,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1173,
+   "window_rank": 554,
+   "fine_top_id": "sunnxt_298_298_bgm_0002",
+   "fine_top_start_s": 14.0,
+   "fine_margin": 0.025505973727149467,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 42.06,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 3,
+   "start_s": 10.68,
+   "end_s": 13.92,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 10.68,
+   "file_rank": 6,
+   "n_files": 1011,
+   "true_z": 2.614443665140916,
+   "top_files": [
+    [
+     "sunnxt_298_298_bgm_0002",
+     3.1213350396600608
+    ],
+    [
+     "sunnxt_298_298_bgm_0000",
+     2.8763345914413367
+    ],
+    [
+     "sunnxt_356_356_bgm_0000",
+     2.7908985118787
+    ],
+    [
+     "sunnxt_298_298_bgm_0001",
+     2.742776907276432
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     2.6268526052467127
+    ]
+   ],
+   "coarse_margin": 0.24500044821872402,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1123,
+   "window_rank": 346,
+   "fine_top_id": "sunnxt_298_298_bgm_0002",
+   "fine_top_start_s": 13.5,
+   "fine_margin": 0.10759028034699902,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 44.18,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 4,
+   "start_s": 13.92,
+   "end_s": 20.68,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 13.92,
+   "file_rank": 8,
+   "n_files": 1011,
+   "true_z": 3.026485229454409,
+   "top_files": [
+    [
+     "sunnxt_545_545_bgm_0002",
+     3.891129244894113
+    ],
+    [
+     "sunnxt_545_545_bgm_0000",
+     3.7068811915793565
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__341__341_bgm_0003",
+     3.476625966827523
+    ],
+    [
+     "sunnxt_545_545_bgm_0003",
+     3.474302853646732
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     3.393759320205116
+    ]
+   ],
+   "coarse_margin": 0.18424805331475635,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 947,
+   "window_rank": 228,
+   "fine_top_id": "sunnxt_545_545_bgm_0002",
+   "fine_top_start_s": 40.0,
+   "fine_margin": 0.2803482050527193,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 35.5,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 5,
+   "start_s": 20.68,
+   "end_s": 24.08,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 20.68,
+   "file_rank": 9,
+   "n_files": 1011,
+   "true_z": 2.7198052201389142,
+   "top_files": [
+    [
+     "sunnxt_545_545_bgm_0002",
+     3.4663198727847795
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     3.39838653935518
+    ],
+    [
+     "sunnxt_545_545_bgm_0000",
+     3.3207795761131647
+    ],
+    [
+     "sunnxt_356_356_bgm_0001",
+     3.289143130083053
+    ],
+    [
+     "combined_full_bgm_dataset_youtube2__341__341_bgm_0003",
+     3.194885597120666
+    ]
+   ],
+   "coarse_margin": 0.06793333342959951,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1122,
+   "window_rank": 123,
+   "fine_top_id": "sunnxt_545_545_bgm_0002",
+   "fine_top_start_s": 38.5,
+   "fine_margin": 0.06800836895858087,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 42.26,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 6,
+   "start_s": 24.08,
+   "end_s": 28.32,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 24.08,
+   "file_rank": 16,
+   "n_files": 1011,
+   "true_z": 2.4347141714601803,
+   "top_files": [
+    [
+     "sunnxt_545_545_bgm_0002",
+     3.6219315958245866
+    ],
+    [
+     "sunnxt_545_545_bgm_0000",
+     3.3281761390511027
+    ],
+    [
+     "sunnxt_356_356_bgm_0001",
+     3.1995232366281616
+    ],
+    [
+     "sunnxt_545_545_bgm_0001",
+     3.0256254308429944
+    ],
+    [
+     "sunnxt_545_545_bgm_0003",
+     2.874571725430153
+    ]
+   ],
+   "coarse_margin": 0.2937554567734839,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1073,
+   "window_rank": 336,
+   "fine_top_id": "sunnxt_545_545_bgm_0002",
+   "fine_top_start_s": 39.0,
+   "fine_margin": 0.42982629234771785,
+   "chosen_id": "sunnxt_545_545_bgm_0002",
+   "chosen_off_s": 45.66,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  },
+  {
+   "scene": 7,
+   "start_s": 28.32,
+   "end_s": 33.52,
+   "true_id": "sunnxt_526_526_bgm_0000",
+   "true_off_s": 28.32,
+   "file_rank": 5,
+   "n_files": 1011,
+   "true_z": 2.7145728902171933,
+   "top_files": [
+    [
+     "sunnxt_356_356_bgm_0000",
+     3.331009740003646
+    ],
+    [
+     "sunnxt_331_331_bgm_0000",
+     3.074360243768354
+    ],
+    [
+     "sunnxt_456_456_bgm_0000",
+     2.9394175640666633
+    ],
+    [
+     "sunnxt_298_298_bgm_0001",
+     2.7386215206980755
+    ],
+    [
+     "sunnxt_526_526_bgm_0000",
+     2.7145728902171933
+    ]
+   ],
+   "coarse_margin": 0.2566494962352919,
+   "shortlisted": true,
+   "n_short": 25,
+   "n_windows": 1023,
+   "window_rank": 113,
+   "fine_top_id": "sunnxt_526_526_bgm_0000",
+   "fine_top_start_s": 20.5,
+   "fine_margin": 0.0969467497276022,
+   "chosen_id": "sunnxt_356_356_bgm_0000",
+   "chosen_off_s": 24.5,
+   "chosen_split": "train",
+   "chosen_track": false,
+   "chosen_window": false
+  }
+ ],
+ "pieces": [
+  {
+   "music_id": "sunnxt_545_545_bgm_0002",
+   "offset": 34.76027297973633,
+   "start": 0.0,
+   "end": 13.92,
+   "tempo": 135.99917602539062
+  },
+  {
+   "music_id": "sunnxt_545_545_bgm_0002",
+   "offset": 36.08380889892578,
+   "start": 13.92,
+   "end": 28.32,
+   "tempo": 135.99917602539062
+  },
+  {
+   "music_id": "sunnxt_356_356_bgm_0000",
+   "offset": 24.706031799316406,
+   "start": 28.32,
+   "end": 33.52,
+   "tempo": 129.19921875
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+======================================================================================================================
+END-TO-END EXAMPLE  sunnxt_460_460_bgm_0001_p1
+======================================================================================================================
+Video                         sunnxt_460_460_bgm_0001_p1.mp4  (37.04 s, silent 25 fps interim)
+Picked as                     romance (couple, ring, fairy lights), part 1
+Test fold                     0  (the models used are fold 0's; they are trained on fold 0's train split only)
+Film                          full_bgm_dataset_youtube2:126  (38 pairs in the dataset)
+Film in this fold's           train: 0 pairs of 158 films   val: 0 pairs of 17 films   test: 38 pairs of 36 films
+Own music track               trk_1021  (pairs with this track in train + val: 0)
+Held-out check                [OK] film and music are not in this fold's training or validation set
+Models                        runs/cleaned/pipeline_ens10/fold0/seed0: ensemble of seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Music library                 1011 files (whole library); shortlist 25 files; 655 windows scored for scene 0
+Original music (truth)        sunnxt_460_460_bgm_0001_p1  (37.0 s)
+----------------------------------------------------------------------------------------------------------------------
+SCENES AND CHOSEN MUSIC  (window = seconds inside the music file, as retrieved)
+----------------------------------------------------------------------------------------------------------------------
+scene  start (s)  end (s)  length (s)  chosen music file      window  file's split  original track  original segment  true file rank  true window rank
+-----  ---------  -------  ----------  -----------------  ----------  ------------  --------------  ----------------  --------------  ----------------
+    0       0.00     4.56        4.56  sunnxt 456 #0001   7.0-11.6 s          test              no                no              76   not shortlisted
+    1       4.56    12.60        8.04  sunnxt 456 #0000    1.5-9.5 s          test              no                no              77   not shortlisted
+    2      12.60    16.24        3.64  sunnxt 456 #0000   9.5-13.2 s          test              no                no              53   not shortlisted
+    3      16.24    26.64       10.40  sunnxt 299 #0000   7.5-17.9 s         train              no                no              72   not shortlisted
+    4      26.64    37.04       10.40  sunnxt 299 #0000   7.5-17.9 s         train              no                no              64   not shortlisted
+File's split: where the chosen file's own video sits in fold 0 (test = unseen music; train = music seen in training).
+Original segment: the original file, starting within 0.5 s of where it plays in the film.
+True file rank: the original music among the 1011 library files (coarse stage). True window rank: among all fine windows; tied windows share a rank.
+----------------------------------------------------------------------------------------------------------------------
+STITCHING AND GROUND TRUTH
+----------------------------------------------------------------------------------------------------------------------
+Scenes                        5
+Music files used              3
+Switches (to another file)    2  (3.2 per minute)
+Jumps (inside a file)         1
+Original track chosen         0 of 5 scenes  (0.0 of 37.0 s)
+Original segment chosen       0 of 5 scenes  (0.0 of 37.0 s)
+Chosen files by split         test 2   train 1
+----------------------------------------------------------------------------------------------------------------------
+RENDERED PIECES  (after beat snap; a piece = one continuous stretch of one file)
+----------------------------------------------------------------------------------------------------------------------
+piece  video start  video end  length (s)  music file            window
+-----  -----------  ---------  ----------  ----------------  ----------
+    0         0.00       4.56        4.56  sunnxt 456 #0001  7.0-11.6 s
+    1         4.56      16.24       11.68  sunnxt 456 #0000  1.6-13.3 s
+    2        16.24      26.64       10.40  sunnxt 299 #0000  7.6-18.0 s
+    3        26.64      37.04       10.40  sunnxt 299 #0000  7.6-18.0 s
+----------------------------------------------------------------------------------------------------------------------
+OUTPUT
+----------------------------------------------------------------------------------------------------------------------
+File                          demo_outputs_cleaned/08_video_sunnxt_460_460_bgm_0001_p1/output_with_bgm.mp4  (2.56 MB)
+Duration check                soundtrack 37.040 s  vs  video 37.040 s  ->  difference +0.0 ms  [OK]
+Time                          plan 0.4 s (retrieve + Viterbi, CPU), render 0.8 s; loading the fold's models and library index 0.8 s
+======================================================================================================================

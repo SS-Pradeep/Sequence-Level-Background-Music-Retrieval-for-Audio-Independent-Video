@@ -1,0 +1,62 @@
+======================================================================================================================
+END-TO-END EXAMPLE  sunnxt 553 #0002
+======================================================================================================================
+Video                         sunnxt_553_553_bgm_0002.mp4  (40.00 s, silent 25 fps interim)
+Picked as                     village drama (rural meal, serious faces)
+Test fold                     1  (the models used are fold 1's; they are trained on fold 1's train split only)
+Film                          sunnxt:553  (1 pair in the dataset)
+Film in this fold's           train: 0 pairs of 148 films   val: 0 pairs of 18 films   test: 1 pairs of 45 films
+Own music track               trk_1081  (pairs with this track in train + val: 0)
+Held-out check                [OK] film and music are not in this fold's training or validation set
+Models                        runs/cleaned/pipeline_ens10/fold1/seed0: ensemble of seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Music library                 1011 files (whole library); shortlist 41 files; 1018 windows scored for scene 0
+Original music (truth)        sunnxt_553_553_bgm_0002  (40.0 s)
+----------------------------------------------------------------------------------------------------------------------
+SCENES AND CHOSEN MUSIC  (window = seconds inside the music file, as retrieved)
+----------------------------------------------------------------------------------------------------------------------
+scene  start (s)  end (s)  length (s)  chosen music file       window  file's split  original track  original segment  true file rank  true window rank
+-----  ---------  -------  ----------  -----------------  -----------  ------------  --------------  ----------------  --------------  ----------------
+    0       0.00     2.36        2.36  sunnxt 380 #0000     3.5-5.9 s         train              no                no             235   not shortlisted
+    1       2.36     7.28        4.92  sunnxt 380 #0000     2.5-7.4 s         train              no                no             467   not shortlisted
+    2       7.28     9.52        2.24  sunnxt 219 #0000     0.0-2.2 s         train              no                no              72   not shortlisted
+    3       9.52    11.76        2.24  sunnxt 219 #0000     2.2-4.5 s         train              no                no             107   not shortlisted
+    4      11.76    14.40        2.64  youtube 115 #0000    0.0-2.6 s         train              no                no             358   not shortlisted
+    5      14.40    19.04        4.64  youtube 115 #0000    2.6-7.3 s         train              no                no             717   not shortlisted
+    6      19.04    27.84        8.80  sunnxt 438 #0000   21.5-30.3 s           val              no                no              38   not shortlisted
+    7      27.84    29.84        2.00  sunnxt 425 #0000     7.0-9.0 s          test              no                no             259   not shortlisted
+    8      29.84    35.44        5.60  sunnxt 219 #0000     1.0-6.6 s         train              no                no             247   not shortlisted
+    9      35.44    37.44        2.00  sunnxt 219 #0000     1.5-3.5 s         train              no                no             111   not shortlisted
+   10      37.44    40.00        2.56  sunnxt 219 #0000     3.5-6.1 s         train              no                no              92   not shortlisted
+File's split: where the chosen file's own video sits in fold 1 (test = unseen music; train = music seen in training).
+Original segment: the original file, starting within 0.5 s of where it plays in the film.
+True file rank: the original music among the 1011 library files (coarse stage). True window rank: among all fine windows; tied windows share a rank.
+----------------------------------------------------------------------------------------------------------------------
+STITCHING AND GROUND TRUTH
+----------------------------------------------------------------------------------------------------------------------
+Scenes                        11
+Music files used              5
+Switches (to another file)    5  (7.5 per minute)
+Jumps (inside a file)         2
+Original track chosen         0 of 11 scenes  (0.0 of 40.0 s)
+Original segment chosen       0 of 11 scenes  (0.0 of 40.0 s)
+Chosen files by split         train 3   val 1   test 1
+----------------------------------------------------------------------------------------------------------------------
+RENDERED PIECES  (after beat snap; a piece = one continuous stretch of one file)
+----------------------------------------------------------------------------------------------------------------------
+piece  video start  video end  length (s)  music file              window
+-----  -----------  ---------  ----------  -----------------  -----------
+    0         0.00       2.36        2.36  sunnxt 380 #0000     3.6-5.9 s
+    1         2.36       7.28        4.92  sunnxt 380 #0000     2.5-7.5 s
+    2         7.28      11.76        4.48  sunnxt 219 #0000     1.8-6.3 s
+    3        11.76      19.04        7.28  youtube 115 #0000    1.7-9.0 s
+    4        19.04      27.84        8.80  sunnxt 438 #0000   21.3-30.1 s
+    5        27.84      29.84        2.00  sunnxt 425 #0000     6.9-8.9 s
+    6        29.84      35.44        5.60  sunnxt 219 #0000     2.6-8.2 s
+    7        35.44      40.00        4.56  sunnxt 219 #0000     1.4-5.9 s
+----------------------------------------------------------------------------------------------------------------------
+OUTPUT
+----------------------------------------------------------------------------------------------------------------------
+File                          demo_outputs_cleaned/08_video_sunnxt_553_0002/output_with_bgm.mp4  (5.39 MB)
+Duration check                soundtrack 40.000 s  vs  video 40.000 s  ->  difference +0.0 ms  [OK]
+Time                          plan 0.9 s (retrieve + Viterbi, CPU), render 0.9 s; loading the fold's models and library index 0.8 s
+======================================================================================================================

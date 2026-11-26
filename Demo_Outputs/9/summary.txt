@@ -1,0 +1,54 @@
+======================================================================================================================
+END-TO-END EXAMPLE  sunnxt 526 #0000
+======================================================================================================================
+Video                         sunnxt_526_526_bgm_0000.mp4  (33.52 s, silent 25 fps interim)
+Picked as                     emotional / tense (mother and child at night)
+Test fold                     4  (the models used are fold 4's; they are trained on fold 4's train split only)
+Film                          sunnxt:526  (3 pairs in the dataset)
+Film in this fold's           train: 0 pairs of 146 films   val: 0 pairs of 16 films   test: 3 pairs of 49 films
+Own music track               trk_1053  (pairs with this track in train + val: 0)
+Held-out check                [OK] film and music are not in this fold's training or validation set
+Models                        runs/cleaned/pipeline_ens10/fold4/seed0: ensemble of seeds [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Music library                 1011 files (whole library); shortlist 25 files; 973 windows scored for scene 0
+Original music (truth)        sunnxt_526_526_bgm_0000  (33.5 s)
+----------------------------------------------------------------------------------------------------------------------
+SCENES AND CHOSEN MUSIC  (window = seconds inside the music file, as retrieved)
+----------------------------------------------------------------------------------------------------------------------
+scene  start (s)  end (s)  length (s)  chosen music file       window  file's split  original track  original segment  true file rank  true window rank
+-----  ---------  -------  ----------  -----------------  -----------  ------------  --------------  ----------------  --------------  ----------------
+    0       0.00     6.08        6.08  sunnxt 545 #0002   33.5-39.6 s         train              no                no               8               972
+    1       6.08     8.56        2.48  sunnxt 545 #0002   39.6-42.1 s         train              no                no               9              1050
+    2       8.56    10.68        2.12  sunnxt 545 #0002   42.1-44.2 s         train              no                no               8               554
+    3      10.68    13.92        3.24  sunnxt 545 #0002   44.2-47.4 s         train              no                no               6               346
+    4      13.92    20.68        6.76  sunnxt 545 #0002   35.5-42.3 s         train              no                no               8               228
+    5      20.68    24.08        3.40  sunnxt 545 #0002   42.3-45.7 s         train              no                no               9               123
+    6      24.08    28.32        4.24  sunnxt 545 #0002   45.7-49.9 s         train              no                no              16               336
+    7      28.32    33.52        5.20  sunnxt 356 #0000   24.5-29.7 s         train              no                no               5               113
+File's split: where the chosen file's own video sits in fold 4 (test = unseen music; train = music seen in training).
+Original segment: the original file, starting within 0.5 s of where it plays in the film.
+True file rank: the original music among the 1011 library files (coarse stage). True window rank: among all fine windows; tied windows share a rank.
+----------------------------------------------------------------------------------------------------------------------
+STITCHING AND GROUND TRUTH
+----------------------------------------------------------------------------------------------------------------------
+Scenes                        8
+Music files used              2
+Switches (to another file)    1  (1.8 per minute)
+Jumps (inside a file)         1
+Original track chosen         0 of 8 scenes  (0.0 of 33.5 s)
+Original segment chosen       0 of 8 scenes  (0.0 of 33.5 s)
+Chosen files by split         train 2
+----------------------------------------------------------------------------------------------------------------------
+RENDERED PIECES  (after beat snap; a piece = one continuous stretch of one file)
+----------------------------------------------------------------------------------------------------------------------
+piece  video start  video end  length (s)  music file             window
+-----  -----------  ---------  ----------  ----------------  -----------
+    0         0.00      13.92       13.92  sunnxt 545 #0002  34.8-48.7 s
+    1        13.92      28.32       14.40  sunnxt 545 #0002  36.1-50.5 s
+    2        28.32      33.52        5.20  sunnxt 356 #0000  24.7-29.9 s
+----------------------------------------------------------------------------------------------------------------------
+OUTPUT
+----------------------------------------------------------------------------------------------------------------------
+File                          demo_outputs_cleaned/08_video_sunnxt_526_0000/output_with_bgm.mp4  (1.86 MB)
+Duration check                soundtrack 33.520 s  vs  video 33.520 s  ->  difference +0.0 ms  [OK]
+Time                          plan 0.8 s (retrieve + Viterbi, CPU), render 0.9 s; loading the fold's models and library index 0.7 s
+======================================================================================================================
