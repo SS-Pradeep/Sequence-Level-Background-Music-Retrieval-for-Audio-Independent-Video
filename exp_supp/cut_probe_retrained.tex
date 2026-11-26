@@ -1,0 +1,11 @@
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Segmenter & AP [95\% CI] & AP $-$ chance [95\% CI] & AUROC [95\% CI] \\
+\midrule
+Random & 0.149 & 0 & 0.500 \\
+BaSSL, original head & 0.157 [0.134, 0.185] & +0.007 [$-$0.007, +0.027] & 0.522 [0.485, 0.559] \\
+BaSSL, trained head & 0.157 [0.133, 0.189] & +0.008 [$-$0.006, +0.027] & 0.514 [0.478, 0.547] \\
+\textbf{BaSSL, trained head (ours)} & 0.160 [0.133, 0.196] & +0.011 [$-$0.003, +0.032] & 0.520 [0.480, 0.556] \\
+Ours w/o contrast/BiGRU, + duration and motion & 0.165 [0.142, 0.197] & +0.016 [+0.001, +0.039] & 0.522 [0.486, 0.557] \\
+\bottomrule
+\end{tabular}

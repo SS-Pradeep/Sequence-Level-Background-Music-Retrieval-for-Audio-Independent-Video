@@ -1,0 +1,12 @@
+\begin{tabular}{lcccccc}
+\toprule
+Variant & AP & F1@0.5\,s & F1@1\,s & F1@1\,s in film & $\Delta$F1@1\,s vs 1 & seg/min \\
+\midrule
+1. PySceneDetect + SigLIP merge (current) & 0.316 {\scriptsize[0.277, 0.359]} & 0.417 {\scriptsize[0.390, 0.445]} & 0.443 {\scriptsize[0.417, 0.470]} & 0.397 {\scriptsize[0.370, 0.423]} & --- & 9.2 \\
+2. TransNetV2 + SigLIP merge & 0.314 {\scriptsize[0.274, 0.361]} & 0.419 {\scriptsize[0.391, 0.447]} & 0.444 {\scriptsize[0.417, 0.471]} & 0.396 {\scriptsize[0.370, 0.422]} & $+0.000$ {\scriptsize[-0.005, +0.005]} & 9.1 \\
+3. TransNetV2 + BaSSL original head & 0.626 {\scriptsize[0.574, 0.673]} & 0.625 {\scriptsize[0.592, 0.658]} & 0.641 {\scriptsize[0.607, 0.674]} & 0.595 {\scriptsize[0.559, 0.632]} & $+0.197$ {\scriptsize[+0.169, +0.223]} & 5.2 \\
+4. TransNetV2 + BaSSL + new head (proposed) & 0.729 {\scriptsize[0.678, 0.774]} & 0.662 {\scriptsize[0.629, 0.694]} & 0.679 {\scriptsize[0.648, 0.710]} & 0.636 {\scriptsize[0.602, 0.669]} & $+0.236$ {\scriptsize[+0.209, +0.261]} & 5.0 \\
+4b. ... + log duration and motion (ablation) & 0.778 {\scriptsize[0.738, 0.812]} & 0.699 {\scriptsize[0.669, 0.726]} & 0.716 {\scriptsize[0.688, 0.743]} & 0.676 {\scriptsize[0.644, 0.706]} & $+0.273$ {\scriptsize[+0.247, +0.297]} & 4.9 \\
+5. Uniform 5 s windows & n/a & 0.087 {\scriptsize[0.076, 0.100]} & 0.193 {\scriptsize[0.177, 0.209]} & 0.169 {\scriptsize[0.154, 0.184]} & $-0.251$ {\scriptsize[-0.279, -0.222]} & 12.3 \\
+\bottomrule
+\end{tabular}

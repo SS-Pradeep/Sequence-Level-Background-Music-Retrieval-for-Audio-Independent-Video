@@ -1,0 +1,82 @@
+% Needs \usepackage{booktabs,longtable}
+\begingroup\footnotesize
+\begin{longtable}{@{}p{0.2\linewidth}p{0.18\linewidth}p{0.56\linewidth}@{}}
+\caption{Implementation details and hyperparameters.}\label{tab:hyperparameters}\\
+\toprule Component & Setting & Value\\ \midrule\endfirsthead
+\toprule Component & Setting & Value\\ \midrule\endhead
+\bottomrule\endlastfoot
+\textbf{Media} & Video & silent copy, 25 fps, short side $\le$ 480 px\\
+ & Music & mono, 48 kHz FLAC; resampled in memory per encoder\\
+ & Timing & music sample 0 = first video frame (A/V start offset corrected)\\
+\midrule
+\textbf{Retrieval segmentation} & Shot detector & PySceneDetect AdaptiveDetector, threshold 3.0\\
+ & Shot merging & merge neighbours while SigLIP cosine $\ge$ 0.85 and length $\le$ 20 s; fold shots < 2 s into a neighbour\\
+ & Pooling span & $\ge$ 5 s (widened symmetrically), video and music sides\\
+\midrule
+\textbf{Frozen encoders} (eval, no grad, fp16) & Video & SigLIP so400m-patch14-384, 1 Hz, 1152-d\\
+ & Music & CLAP \texttt{larger\_clap\_music\_and\_speech} (48 kHz, 10 s windows), 512-d $\oplus$ MERT-v1-330M (24 kHz, 30 s chunks + 5 s context, mean of 25 layers), 1024-d; each L2-normalised, then concatenated (1536-d)\\
+\midrule
+\textbf{Semantic heads} (trained) & Architecture, per side & LayerNorm $\rightarrow$ Linear(d\_in, 512) $\rightarrow$ GELU $\rightarrow$ Dropout(0.2) $\rightarrow$ Linear(512, 256) $\rightarrow$ L2 norm\\
+ & Parameters & 0.72 M (video) + 0.92 M (music) = 1.65 M per head pair\\
+ & Input & mean of the 1 Hz embeddings over the segment span\\
+ & Loss & symmetric InfoNCE; learnable temperature, init 0.07, floor 0.01\\
+ & Batch construction & 128 segments, $\le$ 1 segment per video; same-\texttt{track\_id} pairs masked from the negatives\\
+ & Optimiser & AdamW, lr 1e-3, weight decay 0.05\\
+ & Schedule & linear warmup over 5\% of steps, then cosine decay\\
+ & Epochs & $\le$ 200; early stopping on val segment R@10, patience 20; best-on-val checkpoint kept\\
+ & Film cap & $\le$ 30 clips per film per epoch (random subset, redrawn every epoch)\\
+ & Augmentation & 25\% frame dropout (video); $\pm$1 s span jitter (music)\\
+ & Ensemble & 10 heads, cosines averaged; the 3 reported runs use disjoint head seeds 0--9, 10--19, 20--29\\
+\midrule
+\textbf{Retrieval} & Coarse shortlist & union of the top 10 files for the whole video and for each segment\\
+ & Fine windows & hop 0.5 s, window length = segment length; top 20 windows per segment\\
+ & Branch fusion & z-score per segment; weights semantic 1, dynamics 0, mood 0\\
+\midrule
+\textbf{Hand-set Viterbi} (baseline, \texttt{bgm render}) & Candidates & top 20 windows + contiguous continuations of the previous segment's candidates\\
+ & Penalty grid (fixed-penalty decoder) & $\lambda_{\mathrm{switch}}$ $\in$ \{0.5, 1, 2, 4, 8, never (1000)\}, $\lambda_{\mathrm{jump}}$ $\in$ \{0.25, 0.5, 1, 2\}, $\mu$ $\in$ \{0, 0.5, 1\}; chosen per fold on val concatenations (part track accuracy + switch F1)\\
+ & Key/tempo term & $\mu$ · (circle-of-fifths key distance + tempo mismatch) on file switches\\
+ & Contiguity tolerance & 0.04 s\\
+\midrule
+\textbf{Music-change predictor} (R4; \texttt{bgm render}, not the D150 decoders) & Token per segment & 1155-d: own-frame SigLIP mean (L2) + log duration + motion mean/std\\
+ & Architecture & token MLP 1155 $\rightarrow$ 256 $\rightarrow$ 256; [CTX] token + 2-layer bidirectional Transformer (d 256, 4 heads, FFN 512, dropout 0.4, pre-norm, no positional encoding); pair head on [h\_i, h\_\{i+1\}, $|$h\_i -- h\_\{i+1\}$|$, h\_i $\odot$ h\_\{i+1\}]; 1.68 M parameters\\
+ & Training data & 60--180 s sequences of training clips (blocks of 2--8 same-film clips), redrawn every epoch\\
+ & Optimisation & BCE with pos\_weight = neg/pos; AdamW, lr 3e-4, weight decay 0.3, batch 32; $\le$ 150 epochs of 256 sequences, early stopping on val AP, patience 30\\
+ & Decoder parameters & $\alpha$ $\in$ \{0.125, 0.25, 0.5, 1, 2, 4, 8\}, $\lambda_{\mathrm{jump}}$ $\in$ \{--2 \ldots{} 2\} (10 values), tuned per fold on val sequences; $\mu$ kept from the fixed-penalty decoder; 3 seeds' p averaged\\
+\midrule
+\textbf{Decoder-study segmentation} (D148b, D150) & Shots & TransNetV2, threshold 0.5\\
+ & Shot features & frozen BaSSL, 3 keyframes per shot, 8 neighbouring shots per side\\
+ & Boundary input & 775-d: BaSSL boundary embedding + scene-probability logit + 6 left/right contrast cosines (ResNet over 1, 2, 4, 8 shots; SigLIP over 2, 4 s)\\
+ & Boundary head & LayerNorm $\rightarrow$ Linear(775, 256) $\rightarrow$ GELU $\rightarrow$ Dropout(0.4) $\rightarrow$ BiGRU (128 per direction) $\rightarrow$ LayerNorm $\rightarrow$ Dropout(0.4) $\rightarrow$ Linear(512, 1); 498,191 parameters\\
+ & Training & BCE with pos\_weight = neg/pos; AdamW, lr 1e-3, weight decay 0.3; 32 sequences per batch, 256 per epoch; $\le$ 150 epochs, early stopping on val AP, patience 30; 3 seeds' probabilities averaged\\
+ & Cut selection & $\theta$ $\in$ \{0.02, 0.03, \ldots{}, 0.98\}, maximising pooled val switch F1 ($\pm$1 s); cuts taken by descending probability, segments 2--20 s\\
+\midrule
+\textbf{Decoders compared} (shared lattice) & Lattice & K = 10 files, J = 20 windows per segment + contiguous continuations; 200 training sequences per fold\\
+ & Validation objective & track accuracy + switch F1 ($\pm$1 s) on the fold's val sequences\\
+ & Gold-prior HMM & emission cosine/$\tau$ ($\tau$ = ensemble mean); P(change) = 1 -- exp(--d/L); jump share $\rho$; L, $\rho$ by ML from training gold paths (L grid 0.5--500 s, 2,000 log-spaced points); $\lambda$ $\in$ \{$2^{-2}$, $2^{-1.5}$, \ldots{}, $2^{2}$\}; exact Viterbi\\
+ & Two-stage & cosine-threshold grouping (19 validation-distance quantiles, 5--95\%) or KTS (penalty $\in$ \{0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1, 1.5, 2\}); each group takes the file with the highest mean best-window similarity, laid contiguously\\
+ & Segmental Viterbi & exact DP over runs, files and 0.5 s start offsets; $\lambda_{\mathrm{sw}}$ $\in$ \{0, 0.5, 1, 2, 3, 4, 6, 8\}, $\beta$ $\in$ \{0, 2, 5, 10, 20\}, m $\in$ \{0, 0.5, 1\} (120 configurations)\\
+\midrule
+\textbf{Rendering} & Crossfade & equal-power, 4 beats, clipped to 1--2 s; linear dB gain ramps $\le$ 4 s, $\le$ 6 dB\\
+ & Beat snap & piece start shifted $\le$ 2 s to put cuts on beats (tolerance 0.07 s)\\
+ & Loudness & --16 LUFS per piece (gain cap 12 dB); limiter --1 dBFS; 2 s fade-out\\
+\midrule
+\textbf{Protocol} & Splits & 5 folds over film-title groups; val = 10\% of training film groups; split seed 0\\
+ & Runs & 5 folds $\times$ 3 seeds; mean $\pm$ std\\
+ & CIs & cluster bootstrap over film groups, 10,000 resamples, 95\%\\
+\midrule
+\textbf{Hardware} & GPU & one NVIDIA RTX 4080 SUPER\\
+ & Cost & track query vs 171 files 0.79 ms (warm); features 0.28 s per clip (SigLIP), 0.22 s per music file (CLAP + MERT)\\
+\end{longtable}
+\endgroup
+
+\begin{table}[t]\centering\footnotesize
+\caption{Decoder values selected on validation (cleaned 1,011 pairs).}\label{tab:decoder-tuned}
+\begin{tabular}{@{}cccccccc@{}}\toprule
+Fold & Boundary $\theta$ & $\tau$ & HMM L (s) & HMM $\rho$ & HMM $\lambda$ & Two-stage & Segmental $\lambda_{\mathrm{sw}}$ / $\beta$ / m\\ \midrule
+0 & 0.69 & 0.0673 & 7.69 & 0.039 & 0.354 & threshold 0.203 & 8 / 20 / 0.5\\
+1 & 0.91 & 0.0665 & 7.67 & 0.028 & 0.500 & KTS 0.3 & 3 / 5 / 0.5\\
+2 & 0.92 & 0.0679 & 7.77 & 0.016 & 1.414 & threshold 0.276 & 8 / 20 / 0.5\\
+3 & 0.96 & 0.0667 & 9.21 & 0.032 & 0.500 & KTS 0.1 & 8 / 20 / 0.5\\
+4 & 0.97 & 0.0646 & 7.61 & 0.023 & 1.414 & KTS 0.3 & 8 / 20 / 0.5\\
+\bottomrule\end{tabular}
+\end{table}

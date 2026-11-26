@@ -1,0 +1,47 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Headroom of re-ranking the top-20 shortlist. An oracle that moves the hit to rank 1 reaches R@10 = base R@20;
+`best' is the strongest re-ranker on test (picked after the fact).}
+\label{tab:supp_rerank_headroom}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Protocol & R@1 & R@10 & Oracle R@10 & Outside top-20 & Best re-ranker & R@10 & Captured \\
+\midrule
+Segment, single head & 0.017 & 0.105 & 0.182 & 0.818 & Sequence context & 0.113 & 11\% \\
+Segment, 10-seed ens. & 0.018 & 0.124 & 0.214 & 0.786 & Sequence context & 0.137 & 14\% \\
+Track, single head & 0.043 & 0.253 & 0.405 & 0.595 & LambdaMART (learned, val-trained) & 0.267 & 9\% \\
+Track, 10-seed ens. & 0.053 & 0.305 & 0.462 & 0.538 & Song-group de-dup. & 0.313 & 5\% \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Shortlist size: $\Delta$ R@10 vs.\ no re-ranking for the 10-seed ensemble when the re-ranker may re-order the
+top $K$ candidates (parameters re-chosen on validation for each $K$). Bold = 95\% film-level cluster-bootstrap CI excludes 0.}
+\label{tab:supp_rerank_k}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \multicolumn{4}{c}{Segment} & \multicolumn{4}{c}{Track} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Re-ranker & $K{=}10$ & $K{=}20$ & $K{=}50$ & $K{=}100$ & $K{=}10$ & $K{=}20$ & $K{=}50$ & $K{=}100$ \\
+\midrule
+AQE & $+0.000$ & $-0.000$ & $-0.006$ & $-0.006$ & $+0.000$ & $\mathbf{-0.027}$ & $\mathbf{-0.029}$ & $\mathbf{-0.032}$ \\
+$\alpha$-QE & $+0.000$ & $-0.001$ & $-0.001$ & $-0.001$ & $+0.000$ & $\mathbf{-0.029}$ & $\mathbf{-0.030}$ & $\mathbf{-0.031}$ \\
+DBA & $+0.000$ & $+0.003$ & $+0.004$ & $-0.004$ & $+0.000$ & $-0.016$ & $\mathbf{-0.036}$ & $\mathbf{-0.036}$ \\
+k-reciprocal & $+0.000$ & $+0.004$ & $-0.004$ & $\mathbf{-0.009}$ & $+0.000$ & $-0.021$ & $-0.012$ & $-0.013$ \\
+Mutual kNN & $+0.000$ & $+0.002$ & $+0.002$ & $+0.002$ & $+0.000$ & $+0.000$ & $+0.000$ & $+0.000$ \\
+Dual softmax & $+0.000$ & $+0.005$ & $+0.004$ & $+0.004$ & $+0.000$ & $-0.009$ & $-0.008$ & $-0.008$ \\
+Track agg. (max) & $+0.000$ & $\mathbf{+0.008}$ & $\mathbf{+0.010}$ & $\mathbf{+0.010}$ & $+0.000$ & $+0.006$ & $+0.012$ & $+0.012$ \\
+Track agg. (mean) & $+0.000$ & $+0.003$ & $+0.003$ & $+0.003$ & $+0.000$ & $-0.001$ & $+0.000$ & $+0.000$ \\
+Track agg. (top-3 mean) & $+0.000$ & $+0.004$ & $+0.003$ & $+0.003$ & $+0.000$ & $+0.002$ & $+0.007$ & $+0.007$ \\
+Song-group de-dup. & $+0.000$ & $-0.006$ & $-0.003$ & $-0.003$ & $+0.000$ & $\mathbf{+0.008}$ & $\mathbf{+0.008}$ & $\mathbf{+0.008}$ \\
+Key/tempo re-scoring & $+0.000$ & $+0.002$ & $+0.001$ & $+0.001$ & -- & -- & -- & -- \\
+Sequence context & $+0.000$ & $\mathbf{+0.013}$ & $\mathbf{+0.019}$ & $\mathbf{+0.019}$ & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}

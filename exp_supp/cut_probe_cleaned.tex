@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Music changes at shot cuts inside continuous test clips (cleaned data): 2{,}791 cuts, 417 with a music change. Frozen segmenters; 95\% film-level cluster-bootstrap CIs.}
+\label{tab:supp_incut}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Segmenter & AP & AUROC \\
+\midrule
+Random & 0.149 & 0.500 \\
+BaSSL, original head & 0.154 [0.131, 0.185] & 0.504 [0.466, 0.543] \\
+BaSSL, trained head & 0.161 [0.134, 0.195] & 0.503 [0.469, 0.535] \\
+BaSSL, trained head (ours) & 0.163 [0.135, 0.201] & 0.522 [0.481, 0.560] \\
++ duration, motion & 0.170 [0.143, 0.205] & 0.517 [0.482, 0.550] \\
+\bottomrule
+\end{tabular}
+\end{table}

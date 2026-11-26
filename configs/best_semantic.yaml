@@ -1,0 +1,443 @@
+# D134 recommended semantic-head configuration (d134-base: baseline (lr 1e-3, learnable τ, MLP dropout 0.2, mean pool)).
+# = configs/default.yaml + the cleaned title split + no changes.
+# Use: bgm train semantic --config configs/best_semantic.yaml
+seed: 0
+fold: 0
+paths:
+  raw: data/raw
+  interim: cleaned_dataset/interim
+  features: cleaned_dataset/features
+  manifests: cleaned_dataset/manifests
+  unlabeled: data/unlabeled
+  runs: runs/cleaned
+  results: results/cleaned
+  reports: reports/cleaned
+  renders: renders
+media:
+  video_fps: 25
+  video_short_side: 480
+  video_crf: 18
+  music_sr: 48000
+  max_duration_mismatch_s: 0.5
+  prep_workers: 8
+  hwaccel_decode: null
+shots:
+  detector: pyscenedetect
+  adaptive_threshold: 3.0
+segments:
+  merge_cosine: 0.85
+  max_len_s: 20.0
+  min_shot_s: 2.0
+  min_music_span_s: 5.0
+features:
+  device: cuda
+  fp16: true
+  sem_video:
+    model: google/siglip-so400m-patch14-384
+    store_clip: true
+    clip_model: openai/clip-vit-large-patch14
+    batch: 64
+  sem_music:
+    clap_model: laion/larger_clap_music_and_speech
+    clap_sr: 48000
+    clap_window_s: 10.0
+    mert_model: m-a-p/MERT-v1-330M
+    mert_sr: 24000
+    mert_chunk_s: 30.0
+    mert_context_s: 5.0
+    store_all_mert_layers: true
+  dynamics:
+    rate_hz: 25
+    flow: farneback
+    flow_short_side: 256
+    impulse_sigma_s: 0.04
+    librosa_sr: 22050
+    centroid_floor_hz: 20.0
+    novelty_half_width_s: 8.0
+    affine_grid: 16
+  attributes:
+    moods:
+    - calm
+    - joyful
+    - romantic
+    - melancholic
+    - tense
+    - suspenseful
+    - energetic
+    - heroic
+    - playful
+    - devotional
+    - festive
+    - nostalgic
+    - mysterious
+    - triumphant
+    - serene
+    - dramatic
+    video_templates:
+    - a {} scene
+    - a {} moment in a film
+    - a video that feels {}
+    music_templates:
+    - '{} music'
+    - a {} song
+    - '{} Indian film background music'
+    temps:
+    - 0.1
+    - 0.2
+    - 0.5
+    - 1.0
+    - 2.0
+  bridge:
+    occasions:
+    - a wedding
+    - a temple festival
+    - a religious ritual
+    - a classical dance performance
+    - a folk dance
+    - a fight scene
+    - a chase scene
+    - a romantic date
+    - a family gathering
+    - a cricket match
+    - a road trip
+    - a beach
+    - the mountains
+    - a city at night
+    - village life
+    - cooking
+    - a street market
+    - monsoon rain
+    - a sunrise
+    - a party
+    - a college campus
+    - a workout
+    - a product advertisement
+    - a travel vlog
+    video_templates:
+    - a photo of {}
+    - a scene of {}
+    music_templates:
+    - music for {}
+    - background music for {}
+  imagebind:
+    enabled: true
+    sr: 16000
+    window_s: 2.0
+  tonic: false
+unlabeled:
+  panns_sr: 32000
+  music_min: 0.5
+  speech_max: 0.3
+  min_run_s: 8.0
+splits:
+  n_folds: 5
+  val_fraction: 0.1
+  seed: 0
+  folds_file: folds_title.json
+  film:
+    train_only:
+    - full_bgm_dataset:Konjum salangai
+    extra_links: []
+train:
+  seeds:
+  - 0
+  - 1
+  - 2
+  warmup_frac: 0.05
+  num_workers: 4
+  semantic:
+    video_feature: sem_siglip_1hz
+    music_feature: both
+    positive: segment
+    hidden: 512
+    out_dim: 256
+    dropout: 0.2
+    lr_scratch: 0.001
+    lr_pretrain: 0.001
+    lr_finetune: 0.0001
+    weight_decay: 0.05
+    batch_pretrain: 256
+    batch: 128
+    tau_init: 0.07
+    tau_min: 0.01
+    max_epochs: 200
+    patience: 20
+    frame_drop: 0.25
+    music_jitter_s: 1.0
+    mert_layer_mix: false
+    film_stratified_batches: false
+    temporal_tokens: false
+    tok_dim: 96
+    tok_layers: 1
+    tok_heads: 4
+    tok_ff: 192
+    film_batch_k: 4
+    distill_from_seeds: null
+    distill_weight: 1.0
+    distill_tau: 0.07
+    theme_file: themes.json
+    theme_soft_weight: 0.5
+    theme_targets: null
+    loss: info_nce
+    sigmoid_bias_init: -10.0
+    hn_beta: 0.5
+    vse_margin: 0.2
+    hidden_layers: 1
+    head_type: mlp
+    tau_learnable: true
+    video_pool: mean
+    log_train_recall: false
+    attr_distill_lambda: 0.0
+    max_clips_per_film_per_epoch: 30
+    train_film_fraction: 1.0
+    subset_seed: 0
+  baselines:
+    d_model: 256
+    heads: 4
+    out_dim: 256
+    dropout: 0.1
+    max_len: 256
+    lr: 0.0003
+    weight_decay: 0.05
+    batch: 128
+    tau_init: 0.07
+    max_epochs: 200
+    patience: 20
+    frame_drop: 0.25
+    music_jitter_s: 1.0
+    tag_weight: 0.5
+    mvpt_context_s: 5.0
+  dynamics:
+    c_in: 5
+    video_source: curves
+    c_in_video: null
+    channels: 64
+    kernel: 5
+    dilations:
+    - 1
+    - 2
+    - 4
+    - 8
+    context_steps: 30
+    window_s: 8.0
+    length_buckets_s:
+    - 6.0
+    - 4.0
+    edge_margin_s: 1.25
+    windows_per_10s: 1
+    n_shift_neg: 4
+    shift_min_s: 0.5
+    shift_max_s: 4.0
+    guard_s: 0.1
+    max_ac: 0.5
+    ac_ctx_steps: 25
+    lr_scratch: 0.001
+    lr_pretrain: 0.001
+    lr_finetune: 0.0003
+    weight_decay: 0.01
+    batch: 128
+    tau_init: 0.1
+    tau_min: 0.01
+    max_epochs: 200
+    patience: 20
+    gain_range:
+    - 0.8
+    - 1.2
+    noise_sigma: 0.05
+    channel_drop_p: 0.2
+fusion:
+  grid_step: 0.1
+  sigma_floor: 0.001
+  dyn_weight: 0.0
+  attr_weight: 0.0
+retrieval:
+  coarse_top_k: 10
+  context_radius_s: null
+  context_weight: 0.0
+  coarse_best_window: false
+  coarse_window_s: 20.0
+  fine_top_j: 20
+  window_hop_s: 0.5
+stitch:
+  lam_jump: 1.0
+  lam_switch: 2.0
+  mu: 0.5
+  tol_s: 0.04
+  never: 1000.0
+  beam_factor: 5
+  grid:
+    lam_switch:
+    - 0.5
+    - 1.0
+    - 2.0
+    - 4.0
+    - 8.0
+    - 1000.0
+    lam_jump:
+    - 0.25
+    - 0.5
+    - 1.0
+    - 2.0
+    mu:
+    - 0.0
+    - 0.5
+    - 1.0
+render:
+  sr: 48000
+  crossfade_beats: 4
+  crossfade_min_s: 1.0
+  crossfade_max_s: 2.0
+  crossfade_shape: equal_power
+  gain_ramp_s: 4.0
+  gain_ramp_window_s: 3.0
+  gain_ramp_max_db: 6.0
+  target_lufs: -16.0
+  min_run_for_loudness_s: 3.0
+  gain_cap_db: 12.0
+  fade_out_s: 2.0
+  fade_out_max_frac: 0.1
+  limiter_dbfs: -1.0
+  beat_sync: true
+  beat_sync_max_shift_s: 2.0
+  beat_sync_tol_s: 0.07
+  audio_bitrate: 192k
+  pace_match:
+    weight: 0.0
+  silence:
+    enabled: false
+    min_s: 3.0
+    fade_s: 1.5
+  length_fit:
+    weight: 0.0
+  scene_brief:
+    weight: 0.0
+    file: null
+    vlm_model: Qwen/Qwen2.5-VL-3B-Instruct
+    vlm_revision: 66285546d2b821cf421d4f5eb2576359d3770cd3
+  replay_penalty: 0.0
+  max_plays: 1
+  max_windows_per_file: null
+  penalty_overrides:
+    lam_switch: null
+    lam_jump: null
+    mu: null
+eval:
+  ks:
+  - 1
+  - 5
+  - 10
+  grounding_tol_s: 0.5
+  sync_tol_s: 0.1
+  cut_beat_tol_s: 0.07
+  circular_shift_draws: 20
+  bootstrap_resamples: 10000
+  bootstrap_cluster: track_id
+  concat_videos_per_fold: 50
+  concat_parts:
+  - 3
+  - 4
+  concat_sets_file: concat_sets.json
+audit:
+  exclude: []
+  sunnxt_manifests: full_bgm_dataset_sunnxt
+  workers: 16
+tracks:
+  ber_max: 0.35
+  highpass_hz: 200.0
+  min_overlap_s: 5.0
+  spec_min: 0.4
+  min_votes: 3
+  borderline_report: 10
+pipeline:
+  sem_variant: siglip-both
+  dyn_variant: shiftneg
+  sem_seeds: null
+  exp: pipeline
+cue:
+  cuts_render:
+    enabled: false
+    folds_file: folds_title.json
+    runs: runs/titlesplit
+    kind: gbm
+    music: true
+    alpha: 1.0
+    lam_switch: 1.0
+    lam_jump: 1.0
+    mu: 0.0
+  cuts:
+    half_s: 2
+    tol_s: 1.0
+    silence_db: 20.0
+    silence_min_s: 0.3
+    n_joins: 2000
+    n_shots: 3
+    music_s: 3
+  enabled: true
+  variant: ctx
+  seeds:
+  - 0
+  - 1
+  - 2
+  exp: cue
+  emission_exp: pipeline_ens10
+  sequences_file: cue_sequences_film.json
+  tokens_file: cue_tokens.npz
+  timeline_file: null
+  report_file: null
+  seq_min_s: 60.0
+  seq_max_s: 180.0
+  single_film_min_s: 40.0
+  val_partitions: 5
+  block_max_clips: 8
+  model:
+    d_model: 256
+    heads: 4
+    layers: 2
+    ff: 512
+    dropout: 0.4
+    pos: none
+  splice:
+    p: 0.5
+    min_part_s: 8.0
+    gap_s:
+    - 2.0
+    - 30.0
+  audio:
+    half_s: 3
+    calib_seqs: 512
+  train:
+    lr: 0.0003
+    weight_decay: 0.3
+    batch: 32
+    seqs_per_epoch: 256
+    max_epochs: 150
+    patience: 30
+    pos_weight_seqs: 2048
+  tune:
+    alpha:
+    - 0.125
+    - 0.25
+    - 0.5
+    - 1.0
+    - 2.0
+    - 4.0
+    - 8.0
+    lam_jump:
+    - -2.0
+    - -1.0
+    - -0.75
+    - -0.5
+    - -0.25
+    - 0.0
+    - 0.25
+    - 0.5
+    - 1.0
+    - 2.0
+  scene:
+    threshold: 30.0
+    min_scene_s: 8.0
+    snap_s: 1.0
+    eps: 0.01
+    cache: scenes_content
+person:
+  enabled: false

@@ -1,0 +1,33 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Stitching decoders on the cleaned dataset (1{,}011 pairs, 92 test sequences, 5 title folds). $\Delta$ vs.\ the final system (HMM, gold-path prior, $\alpha$ tuned); bold = 95\% film-level cluster-bootstrap CI excludes 0.}
+\label{tab:supp_stitch_cleaned}
+\begin{tabular}{@{}rlcccccccc@{}}
+\toprule
+\# & Decoder & Acc. & F1 & TBIoU & Sw./min & J./min & Align. & $\Delta$Acc. & $\Delta$F1 \\
+\midrule
+1 & Greedy top-1 & 0.042 & 0.680 & 0.770 & 3.96 & 0.71 & 0.746 & $-0.005$ & $-0.007$ \\
+2 & Greedy + smoothing & 0.043 & 0.666 & 0.739 & 3.57 & 0.85 & 0.697 & $-0.005$ & $\mathbf{-0.021}$ \\
+3 & Two-stage change-point + retrieve & 0.081 & 0.713 & 0.760 & 3.32 & 0.36 & 0.720 & $\mathbf{+0.033}$ & $+0.026$ \\
+4 & Pr\'etet-style DTW (one track) & 0.029 & 0.000 & 0.116 & 0.00 & 4.67 & 0.000 & $-0.018$ & $\mathbf{-0.686}$ \\
+5 & Viterbi, hand-set costs (existing) & 0.043 & 0.677 & 0.768 & 3.95 & 0.21 & 0.747 & $-0.005$ & $-0.010$ \\
+6 & HMM, derived costs, $\lambda$ = 1 & 0.055 & 0.626 & 0.669 & 2.95 & 1.14 & 0.597 & $+0.007$ & $\mathbf{-0.061}$ \\
+7 & HMM, derived costs, $\lambda$ tuned & 0.046 & 0.661 & 0.732 & 3.59 & 0.88 & 0.686 & $-0.002$ & $-0.026$ \\
+8 & CRF, no context & 0.060 & 0.588 & 0.653 & 2.90 & 0.59 & 0.555 & $\mathbf{+0.013}$ & $\mathbf{-0.098}$ \\
+9 & CRF, with context & 0.067 & 0.603 & 0.677 & 3.08 & 0.14 & 0.586 & $\mathbf{+0.020}$ & $\mathbf{-0.084}$ \\
+10 & CRF, with context + derived prior & 0.068 & 0.594 & 0.670 & 3.04 & 0.21 & 0.572 & $\mathbf{+0.020}$ & $\mathbf{-0.093}$ \\
+11 & HMM, $\pi$ from gold paths, $\lambda$ = 1 & 0.055 & 0.678 & 0.774 & 3.99 & 0.06 & 0.748 & $\mathbf{+0.007}$ & $-0.009$ \\
+12 & \textbf{HMM, $\pi$ from gold paths, $\lambda$ tuned} & 0.048 & 0.687 & 0.782 & 4.07 & 0.11 & 0.765 & -- & -- \\
+13 & CRF, context + prior from gold paths & 0.066 & 0.617 & 0.694 & 3.21 & 0.13 & 0.610 & $\mathbf{+0.018}$ & $\mathbf{-0.070}$ \\
+14 & Switch at every cut (calibration) & 0.047 & 0.686 & 0.791 & 4.60 & 0.07 & 0.816 & $-0.000$ & $-0.001$ \\
+15 & Never switch (calibration) & 0.034 & 0.000 & 0.116 & 0.00 & 4.66 & 0.000 & $-0.013$ & $\mathbf{-0.686}$ \\
+16 & Two-stage, re-tuned (768 configs, z rule) & 0.081 & 0.695 & 0.751 & 3.41 & 0.39 & 0.709 & $\mathbf{+0.033}$ & $+0.008$ \\
+17 & Two-stage, re-tuned (3,072 configs, z rule) & 0.081 & 0.697 & 0.752 & 3.41 & 0.40 & 0.711 & $\mathbf{+0.033}$ & $+0.010$ \\
+18 & 2a Semi-Markov, sum-max emission & 0.044 & 0.655 & 0.731 & 3.46 & 1.17 & 0.681 & $-0.004$ & $\mathbf{-0.031}$ \\
+19 & 2b Semi-Markov, pooled emission & 0.038 & 0.552 & 0.610 & 2.83 & 1.80 & 0.539 & $-0.010$ & $\mathbf{-0.136}$ \\
+20 & 2c Semi-Markov, pooled + change predictor & 0.046 & 0.610 & 0.651 & 2.86 & 1.75 & 0.585 & $-0.001$ & $\mathbf{-0.076}$ \\
+21 & Segmental Viterbi (semi-Markov) & 0.081 & 0.722 & 0.744 & 2.93 & 0.30 & 0.683 & $\mathbf{+0.033}$ & $\mathbf{+0.036}$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,396 @@
+seed: 0
+fold: 0
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  features: data/features
+  manifests: data/manifests
+  unlabeled: data/unlabeled
+  runs: runs
+  results: results
+  reports: reports
+  renders: renders
+
+media:
+  video_fps: 25
+  video_short_side: 480
+  video_crf: 18
+  music_sr: 48000
+  max_duration_mismatch_s: 0.5
+  prep_workers: 8
+  hwaccel_decode: null           # e.g. cuda: decode the source video on the GPU; same output, ~40% less CPU on 4K (D49)
+
+shots:
+  detector: pyscenedetect        # pyscenedetect | transnetv2
+  adaptive_threshold: 3.0
+
+segments:
+  merge_cosine: 0.85             # tune by eye on 20 videos
+  max_len_s: 20.0
+  min_shot_s: 2.0
+  min_music_span_s: 5.0          # the span rule (§3.5)
+
+features:
+  device: cuda
+  fp16: true
+  sem_video:
+    model: google/siglip-so400m-patch14-384
+    store_clip: true
+    clip_model: openai/clip-vit-large-patch14
+    batch: 64
+  sem_music:
+    clap_model: laion/larger_clap_music_and_speech  # spec: larger_clap_music, whose hub weights are broken (PROGRESS.md D1)
+    clap_sr: 48000
+    clap_window_s: 10.0
+    mert_model: m-a-p/MERT-v1-330M
+    mert_sr: 24000
+    mert_chunk_s: 30.0
+    mert_context_s: 5.0
+    store_all_mert_layers: true  # about 51 KB per second of audio; needed by train.semantic.mert_layer_mix (D53)
+  dynamics:
+    rate_hz: 25
+    flow: farneback              # farneback | raft_small
+    flow_short_side: 256
+    impulse_sigma_s: 0.04
+    librosa_sr: 22050
+    centroid_floor_hz: 20.0
+    novelty_half_width_s: 8.0
+    affine_grid: 16
+  attributes:
+    moods: [calm, joyful, romantic, melancholic, tense, suspenseful, energetic, heroic,
+            playful, devotional, festive, nostalgic, mysterious, triumphant, serene, dramatic]
+    video_templates: ["a {} scene", "a {} moment in a film", "a video that feels {}"]
+    music_templates: ["{} music", "a {} song", "{} Indian film background music"]
+    temps: [0.1, 0.2, 0.5, 1.0, 2.0]   # per-side softmax temperature grid, fit on train
+  bridge:
+    occasions: [a wedding, a temple festival, a religious ritual, a classical dance performance,
+                a folk dance, a fight scene, a chase scene, a romantic date, a family gathering,
+                a cricket match, a road trip, a beach, the mountains, a city at night, village life,
+                cooking, a street market, monsoon rain, a sunrise, a party, a college campus,
+                a workout, a product advertisement, a travel vlog]
+    video_templates: ["a photo of {}", "a scene of {}"]
+    music_templates: ["music for {}", "background music for {}"]
+  imagebind:
+    enabled: true
+    sr: 16000
+    window_s: 2.0
+  tonic: false
+
+unlabeled:
+  panns_sr: 32000
+  music_min: 0.5                 # tune on 30 hand-checked clips
+  speech_max: 0.3
+  min_run_s: 8.0
+
+splits:
+  n_folds: 5
+  val_fraction: 0.1
+  seed: 0
+  folds_file: folds.json         # folds.json (track_id split, §3.3) | folds_film.json (film split, PROGRESS.md D36)
+  film:                          # `bgm folds --film` -> folds_film.json
+    train_only: ["full_bgm_dataset:Konjum salangai"]   # film groups kept in every fold's train set, never val / test
+    extra_links: []              # [[film key, film key], ...] judged to be one film (beyond shared track_ids)
+
+train:
+  seeds: [0, 1, 2]
+  warmup_frac: 0.05
+  num_workers: 4
+  semantic:
+    video_feature: sem_siglip_1hz
+    music_feature: sem_clap_1hz  # sem_clap_1hz | sem_mert_1hz | both
+    positive: segment            # segment | track (track-level positives if M4 finds the pairs not aligned)
+    hidden: 512
+    out_dim: 256
+    dropout: 0.2
+    lr_scratch: 1.0e-3
+    lr_pretrain: 1.0e-3
+    lr_finetune: 1.0e-4
+    weight_decay: 0.05
+    batch_pretrain: 256
+    batch: 128
+    tau_init: 0.07
+    tau_min: 0.01
+    max_epochs: 200
+    patience: 20
+    frame_drop: 0.25
+    music_jitter_s: 1.0
+    mert_layer_mix: false        # 1a (D53): learned softmax over the 25 MERT layers instead of the uniform average
+    film_stratified_batches: false   # 1c (D57): batches of ~batch/k films x k same-film clips (hard negatives)
+    temporal_tokens: false       # 1b (D59): 1 Hz token sequences + ColBERT max-sim instead of pooled vectors
+    tok_dim: 96
+    tok_layers: 1
+    tok_heads: 4
+    tok_ff: 192
+    film_batch_k: 4              # 1c: max same-film clips per chunk
+    distill_from_seeds: null     # D76: e.g. [0,..,9] = also match the ensemble of these seeds' heads (same fold) with a KL term
+    distill_weight: 1.0
+    distill_tau: 0.07
+    theme_file: themes.json      # D77: music_clusters.json = many-to-many clusters across films (data.themes.make_music_clusters)
+    theme_soft_weight: 0.5       # D74: weight of a theme mate in theme_targets=weighted (the paired music has weight 1)
+    theme_targets: null          # D66: one-to-many targets over theme groups (data/manifests/themes.json): mask = theme mates are not negatives; multi = they are positives
+    loss: info_nce               # D124: info_nce | sigmoid (SigLIP) | hn_nce (hard-negative InfoNCE) | dcl (decoupled) | vse_max (VSE++ hinge)
+    sigmoid_bias_init: -10.0     # sigmoid: learnable bias, SigLIP's init
+    hn_beta: 0.5                 # hn_nce: hardness weight (0 = info_nce)
+    vse_margin: 0.2              # vse_max: hinge margin on cosines
+    hidden_layers: 1             # head depth; 1 = SPEC head, 2-3 = depth ablation (D63)
+    head_type: mlp               # D134: mlp (SPEC head: LayerNorm, d_in -> hidden -> out_dim) | linear (LayerNorm, d_in -> out_dim)
+    tau_learnable: true          # D134: false = InfoNCE temperature fixed at tau_init
+    video_pool: mean             # D134: mean (span mean of 1 Hz SigLIP) | attn (learned attention pooling over the 1 Hz tokens)
+    input_dropout: 0.0           # D135: dropout on the frozen input features (both sides, training only)
+    input_noise: 0.0             # D138: N(0, sigma^2) on the head input after its LayerNorm (both sides, training only)
+    ema_decay: 0.0               # D135: > 0 = validate / early-stop / save an EMA of the head weights (per step)
+    log_train_recall: false      # D134: log track R@1/10/MRR per epoch on a size-matched train subset and the test fold (logging only)
+    attr_distill_lambda: 0.0     # 3.1 (D62): weight of the auxiliary loss (video head predicts the music's mood / loudness / onset / tempo profile)
+    max_clips_per_film_per_epoch: null   # film split: 30 (PROGRESS.md D36); a random subset of a film's clips, redrawn each epoch
+    train_film_fraction: 1.0     # learning curve: train on this share of the fold's training films (nested subsets; train-only films always kept)
+    subset_seed: 0               # order of the training films for train_film_fraction (per fold)
+  baselines:                     # `bgm train baseline --variant cfd|utcmvmr|mvpt`: published methods on our features (PROGRESS.md D43)
+    d_model: 256
+    heads: 4
+    out_dim: 256
+    dropout: 0.1
+    max_len: 256                 # tokens (1 Hz); the longest clip is 171 s
+    lr: 3.0e-4
+    weight_decay: 0.05
+    batch: 128
+    tau_init: 0.07
+    max_epochs: 200
+    patience: 20
+    frame_drop: 0.25
+    music_jitter_s: 1.0
+    tag_weight: 0.5              # utcmvmr: weight of the unified-target (mood tag) loss
+    mvpt_context_s: 5.0          # mvpt: seconds of context on each side of a segment
+  dynamics:
+    c_in: 5
+    video_source: curves         # curves = the 5 hand-made video curves; vjepa = V-JEPA 2 tubelet series (D70; needs c_in_video 1024)
+    c_in_video: null             # video-side input channels when they differ from c_in
+    channels: 64
+    kernel: 5
+    dilations: [1, 2, 4, 8]
+    context_steps: 30            # half the receptive field
+    window_s: 8.0
+    length_buckets_s: [6.0, 4.0]   # §3.5: added because > 10% of clips are too short for 8 s (M7: 14%)
+    edge_margin_s: 1.25
+    windows_per_10s: 1
+    n_shift_neg: 4
+    shift_min_s: 0.5
+    shift_max_s: 4.0
+    guard_s: 0.1                 # beat-grid guard
+    max_ac: 0.5                  # onset-autocorrelation guard
+    ac_ctx_steps: 25
+    lr_scratch: 1.0e-3
+    lr_pretrain: 1.0e-3
+    lr_finetune: 3.0e-4
+    weight_decay: 0.01
+    batch: 128
+    tau_init: 0.1
+    tau_min: 0.01
+    max_epochs: 200
+    patience: 20
+    gain_range: [0.8, 1.2]
+    noise_sigma: 0.05
+    channel_drop_p: 0.2
+
+fusion:
+  grid_step: 0.1
+  sigma_floor: 1.0e-3
+  dyn_weight: 0.0                # D54/D55: envelope test at chance; dynamics branch kept only for Viterbi
+                                 # continuity and rendering. null = tune dyn with the others again
+  attr_weight: 0.0               # D56: mood fusion null; coarse shortlist and fine scoring are semantic-only.
+                                 # No per-fold val tuning any more: a future weight is chosen once by nested
+                                 # CV over training films. null = tune attr on val (deprecated)
+
+retrieval:
+  coarse_top_k: 10
+  context_radius_s: null         # D76: null = the whole video as context; a number = only the video within this many s of the segment's middle
+  context_weight: 0.0            # D75: + this x cos(whole video, the window's whole file) in every window's semantic score; best system: 1.0
+  coarse_best_window: false
+  coarse_window_s: 20.0
+  fine_top_j: 20
+  window_hop_s: 0.5              # fine windows slide every 0.5 s (user decision D21; spec: beat-start windows)
+
+stitch:
+  lam_jump: 1.0                  # tune on val concatenations (§5.10)
+  lam_switch: 2.0                # tune
+  mu: 0.5                        # tune
+  tol_s: 0.04
+  never: 1000.0                  # finite stand-in for "never switch"
+  beam_factor: 5
+  grid:
+    lam_switch: [0.5, 1.0, 2.0, 4.0, 8.0, 1000.0]
+    lam_jump: [0.25, 0.5, 1.0, 2.0]
+    mu: [0.0, 0.5, 1.0]
+
+render:
+  sr: 48000
+  crossfade_beats: 4
+  crossfade_min_s: 1.0
+  crossfade_max_s: 2.0
+  crossfade_shape: equal_power   # equal_power (cos/sin, SPEC §5.11) | linear | sqrt | smoothstep | smoothstep_power | quadratic | slow (D50) | sinc (Whittaker-Shannon, D51)
+  gain_ramp_s: 4.0               # linear gain interpolation (dB) over <= this many s on each side so both pieces meet in loudness at each seam (D48); 0 = off
+  gain_ramp_window_s: 3.0        # loudness of the last / first this-many seconds on each side of a seam
+  gain_ramp_max_db: 6.0          # cap on the level difference a seam ramp corrects
+  target_lufs: -16.0
+  min_run_for_loudness_s: 3.0
+  gain_cap_db: 12.0
+  fade_out_s: 2.0
+  fade_out_max_frac: 0.1
+  limiter_dbfs: -1.0
+  beat_sync: true                # `bgm render` only: each piece enters on a beat at its cut, shifted <= max_shift_s to put inner cuts on beats
+  beat_sync_max_shift_s: 2.0
+  beat_sync_tol_s: 0.07
+  audio_bitrate: 192k            # `bgm render` only: AAC bitrate of the output video
+  pace_match:                  # `bgm render` only (D100): reward music whose energy (onset, loudness) matches the video's pace (cuts, motion)
+    weight: 0.0                  # 0 = off (D75 as benchmarked); 1.0 = as strong as the semantic score
+  silence:                     # `bgm render` only (D107): no music where the scene brief says needs_music: false / music: none
+    enabled: false
+    min_s: 3.0                   # shorter silent parts keep their music (no flicker)
+    fade_s: 1.5                  # equal-power fade out before / in after each silent part
+  length_fit:                  # `bgm render` only (D105): prefer music files long enough for each segment (no looping)
+    weight: 0.0                  # 0 = off
+  scene_brief:                 # `bgm render` only (D101): a VLM drafts what happens per segment + the music it needs (editable
+                               # renders/<out>.brief.yaml); CLAP text scores the music against it
+    weight: 0.0                  # 0 = off
+    file: null                   # null = renders/<out stem>.brief.yaml; drafted if missing, reused as is if present
+    vlm_model: Qwen/Qwen2.5-VL-3B-Instruct
+    vlm_revision: 66285546d2b821cf421d4f5eb2576359d3770cd3
+  replay_penalty: 0.0            # `bgm render` only (D101): cost x fraction of a window already played earlier in the render; 0 = off
+  max_plays: 1                   # `bgm render` only (D101): times a passage may play before the replay penalty applies (2 = one reprise)
+  max_windows_per_file: null     # `bgm render` only (D101): at most this many of a segment's top-J candidate windows from one file; null = no cap
+  exclude_music: []             # `bgm render` only: regexes on music_id left out of the render library, e.g. [Konjum] (hum-dominated audio, D9/D114)
+  penalty_overrides:           # `bgm render` only: replace the run's tuned stitch penalties (null = keep), e.g. lam_switch=8 for fewer song switches
+    lam_switch: null
+    lam_jump: null
+    mu: null
+
+eval:
+  ks: [1, 5, 10]
+  grounding_tol_s: 0.5
+  sync_tol_s: 0.1
+  cut_beat_tol_s: 0.07
+  circular_shift_draws: 20
+  bootstrap_resamples: 10000
+  bootstrap_cluster: track_id
+  concat_videos_per_fold: 50
+  concat_parts: [3, 4]
+  concat_sets_file: concat_sets.json   # built from the configured folds; film split: concat_sets_film.json (D60)
+
+# Added in M1 (PROGRESS.md D7-D8): pair exclusions and metadata sources for `bgm audit`.
+audit:
+  # list of {pattern: regex on pair_id, reason: text}. Empty: the Konjum salangai "duplicates" turned out
+  # to be a 100 Hz hum artifact (PROGRESS.md D9); the user kept them.
+  exclude: []
+  sunnxt_manifests: full_bgm_dataset_sunnxt   # per-movie manifest.csv with clip start/end in the source movie
+  workers: 16
+
+tracks:
+  ber_max: 0.35          # §3.2: link if bit error rate <= this at the best offset
+  highpass_hz: 200.0     # high-pass before fpcalc: mains hum fakes matches (PROGRESS.md M1 finding 3)
+  min_overlap_s: 5.0     # spec 10 s; real reuses with 7-9 s overlap exist (short clips), missing them leaks
+  spec_min: 0.4          # log-mel (300-3800 Hz) corr at the matched offset; hum artifacts score ~0, reuse 0.44-0.99
+  min_votes: 3           # exact sub-fingerprint matches at one offset to become a candidate
+  borderline_report: 10  # pairs just above / below ber_max listed for listening
+
+# Added for M8 / M9 variants: which trained runs the pipeline (fuse, tune-stitch, render) uses, and where it writes.
+pipeline:
+  sem_variant: siglip-both      # runs/semantic/<variant>
+  dyn_variant: shiftneg         # runs/dynamics/<variant>; null = no dynamics model (needs fusion.dyn_weight 0; D60)
+  sem_seeds: null               # D65: e.g. [0,1,2,3,4] = ensemble of these seeds' heads (mean cosine); null = the run's seed only
+  exp: pipeline                 # runs/<exp>/fold<k>/seed<s>
+
+# Learned music-change (cue-switch) predictor (PROGRESS.md D78+; src/bgm/cue/). ON by default since D121 (user's
+# choice; R4 = 2-layer Transformer, the variant chosen on val). `bgm render` replaces the fixed Viterbi switch / jump
+# penalties at each segment boundary by the predicted change probability p_i (emission scores are unchanged); it needs
+# runs/<paths.runs>/<cue.exp>/{ctx,eval} for the render run's fold. cue.enabled=false gives the D75 behaviour.
+cue:
+  cuts_render:                   # D104: `bgm render` with learned per-candidate change costs (bgm.cue.cut_hook)
+    enabled: false
+    folds_file: folds_title.json # the scorer is trained on this split's train clips of the render run's fold
+    runs: runs/titlesplit
+    kind: gbm                    # gbm | mlp
+    music: true                  # use the candidate's own music before the cut
+    alpha: 1.0                   # scale of -log p / -log(1 - p); set from runs/titlesplit/cut_viterbi/tuned.json
+    lam_switch: 1.0
+    lam_jump: 1.0
+    mu: 0.0
+  cuts:                          # D103: music change at shot cuts inside clips (bgm.cue.cuts)
+    half_s: 2                    # MERT seconds on each side of a candidate change point
+    tol_s: 1.0                   # a change within +-tol_s of the cut labels it 1
+    silence_db: 20.0             # or rms this far below the clip median ...
+    silence_min_s: 0.3           # ... for at least this long
+    n_joins: 2000                # different-track artificial joins per fold for the label calibration (train clips only)
+    n_shots: 3                   # shots on each side of the cut for the SigLIP features
+    music_s: 3                   # seconds of the music before the cut for the MERT feature
+  enabled: true                  # render hook (D121); false = D75 behaviour, bit-identical
+  variant: ctx                   # runs/<paths.runs>/cue/<variant>/fold<k>/seed<s>: ctx (R4) | pair (R3) | ctx_cross (R5)
+  seeds: [0, 1, 2]               # cue-model seeds whose p are averaged at render time
+  exp: cue                       # runs/<paths.runs>/<exp>/...
+  emission_exp: pipeline_ens10   # the D75 emission runs (fusion.json, stitch.json) the cue runs are paired with
+  sequences_file: cue_sequences_film.json   # frozen val / test sequences under data/manifests
+  tokens_file: cue_tokens.npz    # per-clip segment tokens, cached under data/features
+  timeline_file: null            # CSV (clip_id, start_sec) with film times for clips the manifest lacks; full dataset: dataset_merged/merged_manifest.csv (D93)
+  report_file: null              # null = results/cue_switch.md
+  seq_min_s: 60.0
+  seq_max_s: 180.0
+  single_film_min_s: 40.0        # secondary same_film / timeline test sets (user, 2026-10-19)
+  val_partitions: 5              # val is small: 5 partitions of the val clips, each clip once per partition
+  block_max_clips: 8             # training blocks: 2..8 clips of one film
+  model:
+    d_model: 256
+    heads: 4
+    layers: 2
+    ff: 512
+    dropout: 0.4
+    pos: none                    # none | index (sinusoidal segment-index encoding before the Transformer)
+  splice:                        # D94: same-music splices, used only by the pair_splice / ctx_splice variants
+    p: 0.5                       # share of a training sequence's clips replaced by a splice (when long enough)
+    min_part_s: 8.0              # each kept end is >= this long
+    gap_s: [2.0, 30.0]           # removed middle, whole seconds
+  audio:                         # D98: audio-teacher targets, used only by the pair_audio / pair_splice_audio variants
+    half_s: 3                    # music distance at a boundary: 1 - cos(mean MERT 3 s before, 3 s after)
+    calib_seqs: 512              # training sequences (no splices) for the logistic calibration p(d), per fold
+  train:
+    lr: 3.0e-4
+    weight_decay: 0.3            # D76
+    batch: 32
+    seqs_per_epoch: 256          # an "epoch" = 8 steps, so early stopping is fine-grained (dev sweep on val, D79)
+    max_epochs: 150
+    patience: 30
+    pos_weight_seqs: 2048        # training sequences drawn once to count neg / pos
+  tune:
+    alpha: [0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+    lam_jump: [-2.0, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 1.0, 2.0]
+  scene:                         # R1: PySceneDetect ContentDetector, replayed on each joined sequence
+    threshold: 30.0
+    min_scene_s: 8.0
+    snap_s: 1.0                  # a scene cut marks the nearest segment boundary within this many s
+    eps: 0.01                    # p = 1 - eps at marked boundaries, eps elsewhere
+    cache: scenes_content        # per-clip frame scores under data/features/<cache>/ (shot boundaries untouched)
+
+# Person-focused branch (PROGRESS.md D87+; docs/person_branch_plan.md; src/bgm/person/). OFF by default: with enabled
+# false nothing changes. With enabled true, `bgm render --run runs/filmsplit/person/eval/<system>/fold<k>/seed<s>` builds
+# the models, index and query of that system (spec in its metrics.json; w in its fusion.json).
+person:
+  enabled: false
+
+tagging:                         # D141: LLM tags on music windows and scenes, tag overlap added to the ensemble score
+  vocab_version: 1               # bump with any change to src/bgm/tagging/tags.json (re-tags everything: new config hash)
+  music_model: Qwen/Qwen2-Audio-7B-Instruct
+  scene_model: Qwen/Qwen2.5-VL-7B-Instruct
+  quant: nf4                     # nf4 (4-bit) | int8
+  method: option_logprob         # per-group questions, confidence = P(answer starts with option); the spec's one-shot JSON
+                                 # prompt failed on Qwen2-Audio (D141 pilot, src/bgm/tagging/pilot_json.py)
+  calibrate: true                # subtract each option's mean log-prob over the side's items (label-free prior removal)
+  tau: 0.2                       # multi-choice groups keep up to 3 options with confidence >= tau (fixed, not tuned)
+  audio_sr: 16000                # Qwen2-Audio's feature extractor rate
+  window_s: 10.0                 # music grid: 10 s windows, 5 s hop, plus one window ending at the file end
+  hop_s: 5.0
+  frames_min: 4                  # frames per scene: about one per second, clipped to [frames_min, frames_max]
+  frames_max: 8
+  frame_max_side: 448
+  max_new_tokens: 200            # pilot_json.py only
+  batch_music: 2                 # items per forward (x 2 paraphrases x 5 groups sequences)
+  batch_scenes: 2
+  lambdas: [0.0, 0.05, 0.1, 0.2, 0.5, 1.0]
+  group_weights: [0.0, 1.0]      # per-group weight grid for the tuned-weights variant (all 2^5 - 1 non-empty subsets)

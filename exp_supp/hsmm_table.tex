@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\caption{Cue-level hidden semi-Markov decoder vs.\ the final scene-level HMM on the 112 test sequences of
+Tab.~3 (same scenes, candidates and emissions; parameters tuned on validation). Mean over five folds;
+$\Delta$ = semi-Markov $-$ final with 95\% film-level cluster-bootstrap CI.}
+\label{tab:supp_hsmm}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Decoder & Acc. & F1 & TBIoU & Sw./min & J./min & Align. \\
+\midrule
+HMM, gold prior (final) & 0.044 & 0.694 & 0.805 & 4.16 & 0.06 & 0.820 \\
+Semi-Markov (cue) & 0.040 & 0.688 & 0.795 & 3.76 & 0.44 & 0.769 \\
+\midrule
+$\Delta$ & $-0.005$ & $-0.007$ & $-0.011$ & $\mathbf{-0.41}$ & $\mathbf{+0.39}$ & $\mathbf{-0.052}$ \\
+95\% CI & [-0.015, +0.005] & [-0.021, +0.007] & [-0.027, +0.004] & [-0.55, -0.27] & [+0.27, +0.52] & [-0.075, -0.031] \\
+\bottomrule
+\end{tabular}}
+\end{table}

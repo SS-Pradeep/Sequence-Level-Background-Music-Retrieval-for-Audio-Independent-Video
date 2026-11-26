@@ -1,0 +1,30 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Re-rankers on the top-20 shortlist (cleaned title split; heads fixed; parameters tuned on validation).
+R@10 and paired $\Delta$ R@10 vs.\ no re-ranking; bold = 95\% film-level cluster-bootstrap CI excludes 0.}
+\label{tab:supp_rerank}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+ & \multicolumn{4}{c}{Segment} & \multicolumn{4}{c}{Track} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & \multicolumn{2}{c}{Single} & \multicolumn{2}{c}{Ens.} & \multicolumn{2}{c}{Single} & \multicolumn{2}{c}{Ens.} \\
+Re-ranker & R@10 & $\Delta$ & R@10 & $\Delta$ & R@10 & $\Delta$ & R@10 & $\Delta$ \\
+\midrule
+No re-ranking & 0.105 & -- & 0.125 & -- & 0.253 & -- & 0.306 & -- \\
+AQE & 0.105 & $-0.001$ & 0.124 & $-0.000$ & 0.242 & $\mathbf{-0.011}$ & 0.279 & $\mathbf{-0.027}$ \\
+$\alpha$-QE & 0.106 & $+0.001$ & 0.124 & $-0.001$ & 0.248 & $-0.005$ & 0.277 & $\mathbf{-0.029}$ \\
+DBA & 0.106 & $+0.000$ & 0.128 & $+0.003$ & 0.240 & $\mathbf{-0.014}$ & 0.290 & $-0.016$ \\
+k-reciprocal & 0.105 & $-0.000$ & 0.129 & $+0.004$ & 0.246 & $\mathbf{-0.007}$ & 0.284 & $-0.021$ \\
+Mutual kNN & 0.106 & $+0.000$ & 0.127 & $+0.002$ & 0.254 & $+0.001$ & 0.306 & $+0.000$ \\
+Dual softmax & 0.104 & $-0.001$ & 0.130 & $+0.005$ & 0.260 & $\mathbf{+0.007}$ & 0.297 & $-0.009$ \\
+Track agg. (max) & 0.106 & $+0.001$ & 0.133 & $\mathbf{+0.008}$ & 0.249 & $-0.004$ & 0.311 & $+0.006$ \\
+Track agg. (mean) & 0.106 & $-0.000$ & 0.128 & $+0.003$ & 0.253 & $-0.001$ & 0.305 & $-0.001$ \\
+Track agg. (top-3 mean) & 0.105 & $-0.001$ & 0.129 & $+0.004$ & 0.252 & $-0.001$ & 0.308 & $+0.002$ \\
+Song-group de-dup. & 0.102 & $-0.003$ & 0.119 & $-0.006$ & 0.263 & $\mathbf{+0.010}$ & 0.314 & $\mathbf{+0.008}$ \\
+Key/tempo re-scoring & 0.106 & $+0.000$ & 0.127 & $+0.002$ & -- & -- & -- & -- \\
+Sequence context & 0.114 & $\mathbf{+0.009}$ & 0.138 & $\mathbf{+0.013}$ & -- & -- & -- & -- \\
+LambdaMART (learned, val-trained) & 0.110 & $\mathbf{+0.005}$ & 0.124 & $-0.000$ & 0.268 & $\mathbf{+0.014}$ & 0.292 & $-0.015$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
