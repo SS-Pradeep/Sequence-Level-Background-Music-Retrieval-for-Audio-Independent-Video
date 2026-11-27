@@ -52,6 +52,8 @@ uses, and the set is self-contained: it imports nothing outside these files.
 .
 ├── pyproject.toml                 installs the package and the `bgm` command
 ├── environment.yml                all dependencies (conda)
+├── RUN_PIPELINE.md                how one run works, file by file (and first run after cloning)
+├── TRAIN.md                       how to train every model, step by step
 ├── requirements.lock.txt          exact package versions for the venv install
 ├── download_assets.sh             downloads trained models, music library, ImageBind, SigLIP
 ├── add_music.sh                   short form of `bgm render` for the final system

@@ -1,7 +1,8 @@
 # How the system runs: file by file, in order
 
 This document follows one run of the final system, from a silent input video to the output video with background
-music. It describes **every file that runs**, in the order it is used, and how each one works.
+music. It describes **every file that runs**, in the order it is used, and how each one works. To train the models
+yourself, see [TRAIN.md](TRAIN.md).
 
 ## First run after cloning
 
