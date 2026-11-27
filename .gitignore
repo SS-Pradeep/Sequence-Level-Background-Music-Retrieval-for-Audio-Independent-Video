@@ -1,0 +1,14 @@
+# Local data and models (large; not stored in git)
+.venv/
+cleaned_dataset/
+runs/
+renders/
+.checkpoints/
+demo_in.mp4
+demo_out.mp4
+new_video.mp4
+new_video_bgm.mp4
+PRESENTATION_SCRIPT.md
+backup_bgm.mp4
+__pycache__/
+*.egg-info/

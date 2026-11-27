@@ -52,6 +52,7 @@ uses, and the set is self-contained: it imports nothing outside these files.
 .
 ├── pyproject.toml                 installs the package and the `bgm` command
 ├── environment.yml                all dependencies (conda)
+├── add_music.sh                   short form of `bgm render` for the final system
 ├── configs/
 │   ├── default.yaml               base settings for every stage
 │   └── best_semantic.yaml         final system: cleaned dataset paths, title split, runs/cleaned
@@ -233,5 +234,11 @@ bgm render --config configs/best_semantic.yaml \
 
 The last line is required. `pipeline.sem_seeds=[0,...,9]` turns on the 10-head ensemble; without it only one head is
 used. `pipeline.dyn_variant=null` stops the index from loading the unused dynamics model.
+
+Or use the short form, which runs the same command:
+
+```bash
+./add_music.sh input.mp4                 # writes input_bgm.mp4
+```
 
 A file-by-file walk-through of this command is in [RUN_PIPELINE.md](RUN_PIPELINE.md).

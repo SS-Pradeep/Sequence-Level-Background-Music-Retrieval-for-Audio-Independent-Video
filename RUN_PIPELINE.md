@@ -14,6 +14,18 @@ The last line is required. `pipeline.sem_seeds=[0,...,9]` turns on the **10-head
 (the run's own seed) is used. `pipeline.dyn_variant=null` stops the index from loading a dynamics model, which the
 final system does not use.
 
+**Short form.** [`add_music.sh`](add_music.sh) runs exactly this command, with the fold 0 run and the repository's
+`.venv`:
+
+```bash
+./add_music.sh input.mp4                 # writes input_bgm.mp4
+./add_music.sh input.mp4 output.mp4      # or choose the output name
+```
+
+It sets `HF_HUB_OFFLINE=1`, so the encoders load from the local Hugging Face cache without contacting the hub. A video
+under 60 s takes about 45 s on an RTX 4080 SUPER. A video of 60 s or longer takes about 1.5–2 min, because it also
+uses the long-video path (step 4).
+
 All paths below are relative to `src/bgm/`.
 
 ---
@@ -190,6 +202,17 @@ Back in `render_video()`:
 | `runs/cleaned/pipeline_ens10/fold<k>/seed<s>/` (`fusion.json`, `stitch.json`) and the semantic heads | Steps 3, 4 and 6 |
 | `runs/cleaned/cue/` (change-predictor checkpoints) | Step 5 |
 | `.checkpoints/imagebind_huge.pth` | Step 2 |
+| `.venv/` with the `bgm` command (`pip install -e . --no-deps`) | Every step |
+
+These folders sit inside the repository but are listed in `.gitignore`, so they are never committed.
+
+To see what the run decided, print one line per segment from the plan:
+
+```bash
+.venv/bin/python -c "import json; p=json.load(open('renders/output.plan.json'))
+for s in p['segments']: print(f\"{s['start_s']:6.2f}-{s['end_s']:6.2f} s   {s['music_id']}   from {s['offset_s']:.1f} s\")
+print('change probability at each boundary:', [round(x, 2) for x in p['cue']['p']])"
+```
 
 ## Optional features (off in the final config)
 
