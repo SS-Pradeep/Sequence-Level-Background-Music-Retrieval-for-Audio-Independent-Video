@@ -21,7 +21,7 @@
 11. [Future work](#11-future-work)
 12. [Future work (technical)](#12-future-work-technical)
 13. [Technology stack](#13-technology-stack)
-14. [Repository guide](#14-repository-guide)
+14. [Files needed to run the system](#14-files-needed-to-run-the-system)
 15. [Glossary](#15-glossary)
 
 ---
@@ -33,7 +33,8 @@ video-to-music retrieval work matches **one clip to one piece of music**. A real
 decide when to keep a track playing and when to switch to a new one.
 
 This project builds a system that takes a silent video and returns a full soundtrack. The video is cut into
-scene-level segments with TransNetV2 shot detection and a BaSSL-based scene-boundary model. Candidate music windows are
+2–20 s segments: shots are detected with PySceneDetect and similar neighbouring shots are merged by SigLIP similarity.
+Candidate music windows are
 retrieved for each segment with a 10-model ensemble of light projection heads on top of frozen foundation encoders:
 SigLIP for video, CLAP + MERT for music. A small Transformer predicts how likely the music is to change at each segment
 boundary, and a **Viterbi** pass picks one music window per segment, trading off how well the music fits each scene
@@ -127,7 +128,7 @@ every visual feature is read from a silent copy of the video, so the system neve
 ```mermaid
 flowchart TD
     IN([Silent video]) --> S1
-    S1["<b>1. Segmentation</b><br/>Shots (TransNetV2) → BaSSL shot features →<br/>trained boundary head → scene-level segments"] --> S2
+    S1["<b>1. Segmentation</b><br/>Shots (PySceneDetect) → merge similar shots by SigLIP cosine →<br/>2–20 s segments"] --> S2
     S2["<b>2. Retrieval</b><br/>Coarse: rank whole files · Fine: slide 0.5 s windows over the top files<br/>Scores from a 10-head ensemble (SigLIP video ↔ CLAP + MERT music)"] --> S3
     S3["<b>3. Change prediction</b><br/>2-layer Transformer → probability that the music changes at each boundary"] --> S4
     S4["<b>4. Viterbi stitching</b><br/>One music window per segment: fit vs. continuity, switch cost from step 3"] --> S5
@@ -137,15 +138,15 @@ flowchart TD
 
 ### 6.2 Segmentation
 
-- **Shot detection:** shot cuts are detected with TransNetV2.
-- **Scene boundaries:** each shot is described with BaSSL (Boundary-aware Self-Supervised Learning) shot features, and a
-  small trained head scores every shot cut as a scene boundary or not. Shots between accepted boundaries form one
-  segment.
-- **Result:** segments are scene-level and average about 11.9 s, against about 6.6 s for the earlier rule-based
-  segmenter.
-- **Earlier baseline:** PySceneDetect shots merged while neighbouring SigLIP image embeddings stay similar
-  (cosine ≥ 0.85, at most 20 s, shots under 2 s folded into the more similar neighbour). It is kept only as the
-  comparison point in [Section 8.2](#82-scene-segmentation).
+- **Shot detection:** shot cuts are detected with PySceneDetect.
+- **Merging:** consecutive shots are merged while their mean SigLIP image embeddings stay similar (cosine ≥ 0.85) and
+  the segment stays at most 20 s long. Shots under 2 s are folded into the more similar neighbour, and a single shot
+  longer than 20 s is split into equal parts.
+- **Result:** segments of 2–20 s (about 6.6 s on average) that tile the whole video.
+- **Segmentation study:** a learned alternative was also built: TransNetV2 shots, BaSSL (Boundary-aware
+  Self-Supervised Learning) shot features and a trained boundary head. It finds clip joins better
+  ([Section 8.2](#82-segmentation-study)), but it is not part of the final pipeline; it is used only in the
+  stitching study.
 
 ### 6.3 Features (frozen encoders)
 
@@ -248,16 +249,18 @@ Cleaned title split, 894 test videos. Median rank: lower is better.
   degradation and 29% for the worst combination, which is still about 2× ImageBind on clean media.
 - **Speed (RTX 4080 SUPER):** a track query takes under 1 ms; a 5.8-minute video renders end to end in about 93 s.
 
-### 8.2 Scene segmentation
+### 8.2 Segmentation study
 
 Segmenters are scored on how well they find the 868 clip joins in the joined test sequences.
 
 | Segmenter | AP | F1 | Mean segment length |
 |---|---:|---:|---:|
-| PySceneDetect + SigLIP merge (baseline) | – | 0.443 | 6.6 s |
-| **TransNetV2 + BaSSL + trained head (final)** | **0.729** | **0.679** | 11.9 s |
+| **PySceneDetect + SigLIP merge (used by the final system)** | – | 0.443 | 6.6 s |
+| TransNetV2 + BaSSL + trained head (study only) | **0.729** | **0.679** | 11.9 s |
 
-- The BaSSL-based segmenter improves boundary F1 by +0.236 over the rule-based baseline.
+- The BaSSL-based segmenter improves boundary F1 by +0.236 over the rule-based segmenter.
+- It was not adopted in the final pipeline: the heads, change predictor and tuned penalties are all built on the
+  PySceneDetect segments, and better join detection did not carry over to music changes (below).
 - Swapping only the shot detector (PySceneDetect → TransNetV2) adds nothing on its own; the gain comes from the BaSSL
   features and the trained head.
 - On the 3,467 shot cuts *inside* continuous test clips (452 of them real music changes), every segmenter variant is at
@@ -371,41 +374,80 @@ segment length (see [Limitations](#10-limitations)).
 | Language | Python 3.11 |
 | Deep learning | PyTorch, Hugging Face Transformers |
 | Encoders | SigLIP, CLAP, MERT (plus ImageBind, LanguageBind and PANNs for evaluation) |
-| Segmentation | TransNetV2, BaSSL (PySceneDetect for the baseline) |
+| Segmentation | PySceneDetect + SigLIP merge (TransNetV2 and BaSSL in the segmentation study) |
 | Audio / video | ffmpeg, librosa, Chromaprint (`fpcalc`), pyloudnorm |
 | CLI and config | Typer (`bgm ...` commands), OmegaConf YAML configs |
-| Testing | pytest (about 500 tests, CPU-only with fake encoders) |
 | Hardware used | NVIDIA RTX 4080, 16 GB |
 
 ---
 
-## 14. Repository guide
+## 14. Files needed to run the system
 
-| Path | What is there |
+Only the files below are needed to train and run the final system. Everything else in the repository (experiments,
+studies, analysis scripts) can be ignored.
+
+### 14.1 Setup files
+
+| File | Purpose |
 |---|---|
-| [`README.md`](README.md) | Code structure of the final system: which files run, and what each does. |
-| [`R.md`](R.md) | Install and usage guide. |
-| [`src/bgm/`](src/bgm/) | The `bgm` package (data, features, training, retrieval, change predictor, rendering). |
-| [`configs/`](configs/) | YAML configs; `best_semantic.yaml` is the final system. |
-| [`results/`](results/) | Result tables. |
-| [`stitching/`](stitching/) | Stitching-method ablation study. |
-| [`exp_supp/`](exp_supp/) | Supplementary experiments. |
-| [`Demo_Outputs/`](Demo_Outputs/) | 11 demo clips: original video, the system's output, the chosen music and a report for each. |
-| [`docs/`](docs/) | Full methodology, build spec and the decision log (D1–D155). |
+| [`pyproject.toml`](pyproject.toml) | Installs the package and the `bgm` command. |
+| [`environment.yml`](environment.yml) | All dependencies (conda environment). |
+| [`configs/default.yaml`](configs/default.yaml) | Base settings for every stage. |
+| [`configs/best_semantic.yaml`](configs/best_semantic.yaml) | Final-system settings: cleaned dataset, title split, `runs/cleaned/`. |
+| [`tools/build_cleaned.py`](tools/build_cleaned.py) | Builds the cleaned 1,011-pair dataset and its folds. |
 
-Every folder has its own `README.md`.
+### 14.2 Source code (`src/bgm/`)
 
-**Quick start** (after installing, see [`R.md`](R.md)):
+| Folder | Files | Role |
+|---|---|---|
+| `src/bgm/` | `cli.py`, `config.py`, `log.py`, `runs.py`, `tools.py` | The `bgm` command, config loading, run folders, logging, ffmpeg lookup. |
+| `data/` | `manifest.py`, `media.py`, `prep.py`, `shots.py`, `segments.py`, `folds.py`, `films.py`, `audit.py`, `tracks.py`, `near_dups.py` | Prepares the media, shots, segments and the 5-fold split. |
+| `features/` | `extract.py`, `encoders.py`, `hf.py`, `dynamics.py`, `keys.py`, `timing.py` | Frozen encoders (SigLIP, CLAP, MERT) and the feature cache. |
+| `models/` | `heads.py` | The semantic heads. |
+| `train/` | `semantic.py`, `losses.py`, `dynamics.py`, `shifts.py` | Trains the 10 heads per fold with InfoNCE. |
+| `eval/` | `store.py`, `metrics.py`, `protocol.py`, `attributes.py` | Feature access and the validation metrics used for early stopping and tuning. |
+| `retrieval/` | `index.py`, `pipeline.py`, `chunked.py`, `stitch.py`, `stitch_eval.py`, `fuse.py`, `tune_stitch.py` | Coarse-to-fine retrieval and Viterbi stitching. |
+| `cue/` | `tokens.py`, `sequences.py`, `model.py`, `train.py`, `stitch.py`, `evaluate.py`, `baselines.py`, `scenes.py`, `hook.py` | The music-change predictor. |
+| `render/` | `run.py`, `query.py`, `render.py` | Silent video in, video with music out. |
+| `analysis/` | `long_video.py` | Long-video shortlist (videos of 60 s or more). |
+
+Every subfolder also needs its `__init__.py`. Full file-by-file descriptions are in [`README.md`](README.md).
+
+### 14.3 Data and models (not stored in git)
+
+| Path | Contents |
+|---|---|
+| `cleaned_dataset/` | Music library: prepared music, cached features, manifests. |
+| `runs/cleaned/` | Trained heads, `fusion.json`, `stitch.json` and change-predictor models. |
+| `.checkpoints/imagebind_huge.pth` | ImageBind weights, used when featurizing the input video. |
+
+### 14.4 Commands
+
+All commands take `--config configs/best_semantic.yaml`.
+
+| Step | Command |
+|---|---|
+| 1. Build the dataset | `python tools/build_cleaned.py` |
+| 2. Prepare media | `bgm prep`, `bgm shots` |
+| 3. Extract features | `bgm extract` |
+| 4. Make segments | `bgm segment` |
+| 5. Train the heads | `bgm train semantic --grid` |
+| 6. Tune retrieval | `bgm fuse --grid` |
+| 7. Tune Viterbi | `bgm tune-stitch --grid` |
+| 8. Train the change predictor | `bgm cue build`, `bgm cue train`, `bgm cue eval` |
+| **9. Add music to a video** | see below |
 
 ```bash
 bgm render --config configs/best_semantic.yaml \
            --video input.mp4 --out output.mp4 \
-           --run runs/cleaned/pipeline_ens10/fold0/seed0
+           --run runs/cleaned/pipeline_ens10/fold0/seed0 \
+           pipeline.dyn_variant=null "pipeline.sem_seeds=[0,1,2,3,4,5,6,7,8,9]"
 ```
 
-For deeper reading: [`docs/PROJECT_BRIEFING.md`](docs/PROJECT_BRIEFING.md) (all results),
-[`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) (full method), [`docs/PROGRESS.md`](docs/PROGRESS.md) (every design
-decision).
+The last line turns on the 10-head ensemble and switches off the unused dynamics model; without it only one head is
+used.
+
+With the trained models and the music library in place, only step 9 is needed.
 
 ---
 
@@ -414,8 +456,8 @@ decision).
 | Term | Meaning |
 |---|---|
 | **BGM** | Background music. |
-| **Segment** | A scene-level stretch of video (one or more shots) between two detected scene boundaries. |
-| **BaSSL** | Boundary-aware Self-Supervised Learning: a pretrained model for finding scene boundaries between shots. |
+| **Segment** | A 2–20 s stretch of video made of one or more similar shots. |
+| **BaSSL** | Boundary-aware Self-Supervised Learning: a pretrained scene-boundary model, used in the segmentation study. |
 | **Window** | A stretch of a music file chosen for one segment. |
 | **Track R@k** | Share of test videos whose correct song is in the top *k* results. |
 | **Viterbi** | A dynamic-programming algorithm that finds the best sequence of choices through a lattice of candidates. |
