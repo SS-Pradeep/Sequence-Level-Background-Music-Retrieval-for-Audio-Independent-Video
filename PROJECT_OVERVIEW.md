@@ -2,9 +2,7 @@
 
 **Pradeep S S**
 
-> Give the system a **silent video** and it returns the same video with a **continuous background-music soundtrack**,
-> assembled from a fixed music library: the right kind of music for each scene, held where the scene continues and
-> changed where it moves on.
+
 
 ---
 
