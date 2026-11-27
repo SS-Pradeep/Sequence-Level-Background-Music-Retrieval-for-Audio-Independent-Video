@@ -56,7 +56,6 @@ uses, and the set is self-contained: it imports nothing outside these files.
 │   ├── default.yaml               base settings for every stage
 │   └── best_semantic.yaml         final system: cleaned dataset paths, title split, runs/cleaned
 ├── tools/
-│   ├── setup_external.sh          downloads the ImageBind weights
 │   └── build_cleaned.py           builds cleaned_dataset/ and its manifests
 └── src/bgm/
     ├── __init__.py  cli.py  config.py  log.py  runs.py  tools.py
@@ -85,7 +84,6 @@ Every subfolder's `__init__.py` is an empty package marker and must be present.
 | `environment.yml` | Conda environment: Python 3.11, PyTorch, transformers, librosa, ffmpeg and the other dependencies. |
 | `configs/default.yaml` | Base settings for every stage: paths, media format, encoders, training, retrieval, stitching, render, cue predictor. |
 | `configs/best_semantic.yaml` | Final-system config: points at `cleaned_dataset/` and `runs/cleaned/` and uses the title split. |
-| `tools/setup_external.sh` | Downloads the ImageBind weights to `.checkpoints/`. Rendering needs them. |
 | `tools/build_cleaned.py` | Builds `cleaned_dataset/` (1,011 pairs) from the hand-trimmed pairs, and writes its manifests and title-split folds. |
 
 ### 3.2 Core (`src/bgm/`)
@@ -185,7 +183,7 @@ Every subfolder's `__init__.py` is an empty package marker and must be present.
 | Tune retrieval | `bgm fuse --grid` | `retrieval/fuse`, `index`, `pipeline` |
 | Tune Viterbi | `bgm tune-stitch --grid` | `retrieval/tune_stitch`, `stitch_eval`, `stitch` |
 | Change predictor | `bgm cue build`, `cue train`, `cue eval` | `cue/*` |
-| **Add music to a video** | `bgm render --config configs/best_semantic.yaml --video in.mp4 --out out.mp4 --run runs/cleaned/pipeline_ens10/fold0/seed0 …` | `render/*`, `retrieval/*`, `cue/hook`, `cue/model`, `cue/stitch` |
+| **Add music to a video** | `bgm render ...` (full command in [section 6](#6-install-and-run)) | `render/*`, `retrieval/*`, `cue/hook`, `cue/model`, `cue/stitch` |
 
 Pass `--config configs/best_semantic.yaml` to every command.
 
@@ -196,4 +194,44 @@ Pass `--config configs/best_semantic.yaml` to every command.
 | What | Path |
 |---|---|
 | Trained runs: heads, `fusion.json`, `stitch.json`, cue models | `runs/cleaned/semantic/`, `runs/cleaned/pipeline_ens10/`, `runs/cleaned/cue/` |
-| ImageBind weights | `.checkpoints/imagebind_huge.pth` (from `tools/setup_external.sh`) |
+| ImageBind weights | `.checkpoints/imagebind_huge.pth`; rendering computes ImageBind features for the input video |
+
+---
+
+## 6. Install and run
+
+### Requirements
+
+- Linux with an NVIDIA GPU. The measurements in this repo come from an RTX 4080 SUPER, 16 GB. Feature extraction and
+  training expect CUDA.
+- Conda (or mamba). The environment installs `ffmpeg` and `ffprobe`.
+- `fpcalc` (Chromaprint), only for audio fingerprinting when building a dataset from raw clips:
+  `sudo apt install libchromaprint-tools`.
+- Disk: the full working set (datasets, features, runs) is about 270 GB. Only the code is stored in git.
+
+### Install
+
+```bash
+git clone https://github.com/SS-Pradeep/Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video.git
+cd Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video
+conda env create -f environment.yml        # creates the `bgm` env (Python 3.11, PyTorch, transformers, librosa, ...)
+conda activate bgm
+pip install -e . --no-deps                 # installs the `bgm` command
+bgm doctor                                 # prints GPU, ffmpeg, ffprobe, fpcalc and package versions
+```
+
+The Hugging Face models (SigLIP so400m, CLAP `larger_clap_music_and_speech`, MERT-v1-330M) download on first use.
+
+### Add music to a video
+
+```bash
+bgm render --config configs/best_semantic.yaml \
+  --video input.mp4 --out output.mp4 \
+  --run runs/cleaned/pipeline_ens10/fold0/seed0 \
+  pipeline.dyn_variant=null "pipeline.sem_seeds=[0,1,2,3,4,5,6,7,8,9]"
+```
+
+The last line is required. `pipeline.sem_seeds=[0,...,9]` turns on the 10-head ensemble; without it only one head is
+used. `pipeline.dyn_variant=null` stops the index from loading the unused dynamics model.
+
+A file-by-file walk-through of this command is in [RUN_PIPELINE.md](RUN_PIPELINE.md).
