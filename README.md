@@ -52,6 +52,8 @@ uses, and the set is self-contained: it imports nothing outside these files.
 .
 ├── pyproject.toml                 installs the package and the `bgm` command
 ├── environment.yml                all dependencies (conda)
+├── requirements.lock.txt          exact package versions for the venv install
+├── download_assets.sh             downloads trained models, music library, ImageBind, SigLIP
 ├── add_music.sh                   short form of `bgm render` for the final system
 ├── configs/
 │   ├── default.yaml               base settings for every stage
@@ -192,10 +194,15 @@ Pass `--config configs/best_semantic.yaml` to every command.
 
 ## 5. Needed besides the code (not in the repository)
 
-| What | Path |
-|---|---|
-| Trained runs: heads, `fusion.json`, `stitch.json`, cue models | `runs/cleaned/semantic/`, `runs/cleaned/pipeline_ens10/`, `runs/cleaned/cue/` |
-| ImageBind weights | `.checkpoints/imagebind_huge.pth`; rendering computes ImageBind features for the input video |
+These are too large for git (GitHub rejects files over 100 MB) and are listed in `.gitignore`.
+[`download_assets.sh`](download_assets.sh) downloads all of them into the right place.
+
+| What | Path | Source |
+|---|---|---|
+| Trained runs: heads (5 folds x 30 seeds), `fusion.json`, `stitch.json`, cue models | `runs/cleaned/semantic/siglip-both/`, `runs/cleaned/pipeline_ens10/`, `runs/cleaned/cue/` | Hugging Face dataset `pradeepss007/bgm-render-assets` |
+| Music library: music and video features, 48 kHz music files, manifests | `cleaned_dataset/` | same |
+| ImageBind weights; rendering computes ImageBind features for the input video | `.checkpoints/imagebind_huge.pth` | Meta's public release |
+| SigLIP so400m (video encoder) | Hugging Face cache | `google/siglip-so400m-patch14-384` |
 
 ---
 
@@ -203,22 +210,38 @@ Pass `--config configs/best_semantic.yaml` to every command.
 
 ### Requirements
 
-- Linux with an NVIDIA GPU. The measurements in this repo come from an RTX 4080 SUPER, 16 GB. Feature extraction and
-  training expect CUDA.
-- Conda (or mamba). The environment installs `ffmpeg` and `ffprobe`.
-- `fpcalc` (Chromaprint), only for audio fingerprinting when building a dataset from raw clips:
-  `sudo apt install libchromaprint-tools`.
-- Disk: the full working set (datasets, features, runs) is about 270 GB. Only the code is stored in git.
+- Linux with an NVIDIA GPU. The measurements in this repo come from an RTX 4080 SUPER, 16 GB.
+- Python 3.11 or newer, and `ffmpeg` / `ffprobe` (`sudo apt install ffmpeg`).
+- Disk: about 12 GB for rendering (assets) plus about 8 GB for the Python packages. The full research working set
+  (raw datasets, all features, all runs) is about 270 GB, but rendering does not need it.
 
-### Install
+### Install (to add music to videos)
 
 ```bash
 git clone https://github.com/SS-Pradeep/Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video.git
 cd Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.lock.txt   # exact package versions the system was tested with
+.venv/bin/pip install -e . --no-deps             # installs the `bgm` command
+./download_assets.sh                             # trained models, music library, ImageBind, SigLIP (about 11.5 GB)
+.venv/bin/bgm doctor                             # prints GPU, ffmpeg, ffprobe and package versions
+```
+
+Then add music to a video:
+
+```bash
+./add_music.sh my_video.mp4                      # writes my_video_bgm.mp4
+```
+
+### Install for training (conda)
+
+Training and building the dataset from raw clips use the conda environment, which also installs `ffmpeg`.
+`fpcalc` (Chromaprint) is needed only for audio fingerprinting: `sudo apt install libchromaprint-tools`.
+
+```bash
 conda env create -f environment.yml        # creates the `bgm` env (Python 3.11, PyTorch, transformers, librosa, ...)
 conda activate bgm
-pip install -e . --no-deps                 # installs the `bgm` command
-bgm doctor                                 # prints GPU, ffmpeg, ffprobe, fpcalc and package versions
+pip install -e . --no-deps
 ```
 
 The Hugging Face models (SigLIP so400m, CLAP `larger_clap_music_and_speech`, MERT-v1-330M) download on first use.

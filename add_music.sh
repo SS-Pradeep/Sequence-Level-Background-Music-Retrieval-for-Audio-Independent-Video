@@ -10,6 +10,11 @@ if [ -z "$1" ]; then
   echo "usage: ./add_music.sh input.mp4 [output.mp4]"
   exit 1
 fi
+if [ ! -f "$1" ]; then
+  echo "error: video not found: $1"
+  echo "copy your video here first, e.g.:  cp ~/Videos/my_clip.mp4 new_video.mp4"
+  exit 1
+fi
 in="$(realpath "$1")"
 out="${2:-${1%.*}_bgm.mp4}"
 out="$(realpath -m "$out")"

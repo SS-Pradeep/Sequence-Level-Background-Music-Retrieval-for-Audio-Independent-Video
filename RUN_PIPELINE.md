@@ -3,6 +3,36 @@
 This document follows one run of the final system, from a silent input video to the output video with background
 music. It describes **every file that runs**, in the order it is used, and how each one works.
 
+## First run after cloning
+
+The repository holds only the code. The trained models and the music library are too large for git, so they are
+downloaded once with `download_assets.sh`. You need Linux, an NVIDIA GPU, Python 3.11 or newer, `ffmpeg`, and about
+20 GB of free disk.
+
+```bash
+# 1. Get the code
+git clone https://github.com/SS-Pradeep/Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video.git
+cd Sequence-Level-Background-Music-Retrieval-for-Audio-Independent-Video
+
+# 2. Install the Python packages and the `bgm` command (once)
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.lock.txt
+.venv/bin/pip install -e . --no-deps
+
+# 3. Download the trained models, music library, ImageBind and SigLIP (once, about 11.5 GB)
+./download_assets.sh
+
+# 4. Add music to a video
+./add_music.sh my_video.mp4              # writes my_video_bgm.mp4
+```
+
+Steps 1–3 are done once. After that, only step 4 is needed for each new video. To check the install, run
+`.venv/bin/bgm doctor`, or try a demo clip: `./add_music.sh Demo_Outputs/1/original_video.mp4 test_bgm.mp4`.
+
+## The command
+
+`add_music.sh` runs this command:
+
 ```bash
 bgm render --config configs/best_semantic.yaml \
            --video input.mp4 --out output.mp4 \
@@ -195,16 +225,30 @@ Back in `render_video()`:
 
 ## What the run needs besides the code
 
-| Path | Used in |
-|---|---|
-| `configs/best_semantic.yaml`, `configs/default.yaml` | Every step |
-| `cleaned_dataset/` (music, features, manifests) | Steps 3, 4 and 7 |
-| `runs/cleaned/pipeline_ens10/fold<k>/seed<s>/` (`fusion.json`, `stitch.json`) and the semantic heads | Steps 3, 4 and 6 |
-| `runs/cleaned/cue/` (change-predictor checkpoints) | Step 5 |
-| `.checkpoints/imagebind_huge.pth` | Step 2 |
-| `.venv/` with the `bgm` command (`pip install -e . --no-deps`) | Every step |
+| Path | Used in | Where it comes from |
+|---|---|---|
+| `configs/best_semantic.yaml`, `configs/default.yaml` | Every step | In git |
+| `.venv/` with the `bgm` command | Every step | Created in step 2 of [First run after cloning](#first-run-after-cloning) |
+| `cleaned_dataset/manifests/` (`pairs.csv`, `segments.csv`, `tracks.csv`, `folds_title.json`) | Step 3 | `download_assets.sh` |
+| `cleaned_dataset/features/music/`, `cleaned_dataset/features/video/` | Steps 3 and 4 | `download_assets.sh` |
+| `cleaned_dataset/interim/music/` (the 1,011 music files) | Step 7 | `download_assets.sh` |
+| `runs/cleaned/semantic/siglip-both/fold<k>/seed<s>/ckpt.pt` (all 5 folds are loaded for videos ≥ 60 s) | Steps 3 and 4 | `download_assets.sh` |
+| `runs/cleaned/pipeline_ens10/fold<k>/seed<s>/` (`fusion.json`, `stitch.json`) | Steps 3, 4 and 6 | `download_assets.sh` |
+| `runs/cleaned/cue/ctx/`, `runs/cleaned/cue/eval/` (change predictor) | Step 5 | `download_assets.sh` |
+| `.checkpoints/imagebind_huge.pth` | Step 2 | `download_assets.sh` (Meta's public file) |
+| SigLIP `google/siglip-so400m-patch14-384` (Hugging Face cache) | Step 2 | `download_assets.sh` |
 
-These folders sit inside the repository but are listed in `.gitignore`, so they are never committed.
+The downloaded folders sit inside the repository but are listed in `.gitignore`, so they are never committed. This
+list was checked by tracing which files a real run opens.
+
+**Common errors**
+
+| Error | Cause | Fix |
+|---|---|---|
+| `error: video not found` from `add_music.sh` | The input path is wrong | Check the path with `ls`; copy the video into the repo or give its full path |
+| `No such file ... runs/cleaned/...` or `cleaned_dataset/...` | Assets not downloaded | Run `./download_assets.sh` |
+| `.venv/bin/bgm: No such file` | Package not installed | Run step 2 of [First run after cloning](#first-run-after-cloning) |
+| SigLIP fails to load in offline mode | SigLIP not in the Hugging Face cache | Run `./download_assets.sh` (it fetches SigLIP) |
 
 To see what the run decided, print one line per segment from the plan:
 
